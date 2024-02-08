@@ -13,7 +13,6 @@ wandb/
 *.npy
 *.pt
 *.png
-*.jpg
 *.bindPredict_out
 
 # Distribution / packaging
