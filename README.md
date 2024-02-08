@@ -6,7 +6,7 @@ The implementation of bindNode24 builds on top of bindNode23 [2], a method to pr
 
 - [Usage](#Usage)
 - [Data](#Data)
-- [Development Set](#Development Set)
+- [Development](#Development)
 - [Requirements](#Requirements)
 - [Team](#Team)
 - [License](#License)
@@ -21,7 +21,7 @@ All needed files and paths can be set in `config.py` (marked as TODOs).
 
 ### Data
 
-#### Development Set
+#### Development
 
 The data set used for training and testing was extracted from BioLip [4]. The UniProt identifiers for the 5 splits used during cross-validation (DevSet1014), the test set (TestSet300), and the independent set of proteins added to BioLip after November 2019 (TestSetNew46) as well as the corresponding FASTA sequences and used binding annotations are made available in the `data` folder.
 
@@ -45,7 +45,7 @@ Technical University of Munich - Rostlab
 
 | Kyra Erckert | Franz Birkeneder | Burkhard Rost |
 |:------------:|:-------------:|:-------------:|
-|<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/erckert.jpg"> |<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/birkeneder.jpg">||<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/rost.jpg">|
+|<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/erckert.jpg"> |<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/birkeneder.jpg">|<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/rost.jpg">|
 
 
 ### License
