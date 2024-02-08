@@ -19,6 +19,7 @@ class App:
                                 help='File path to .ini file if it isn\'t config.ini',
                                 metavar="file_path")
             args = parser.parse_args()
+            App.file_path = os.path.normpath(args.f)
             print(f'Used filepath is: {App.file_path}')
         if App._conf is None:
             App._conf = configparser.ConfigParser()
