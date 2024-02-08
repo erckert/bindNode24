@@ -1,0 +1,22 @@
+name: gcn
+
+channels:
+  - pytorch
+  - nvidia
+  - pyg
+dependencies:
+  - numpy
+  - pytorch 
+  - torchvision 
+  - torchaudio 
+  - pytorch-cuda=11.6
+  - pyg
+  - pip
+  - pip:
+      - transformers
+      - sentencepiece
+      - scikit-learn
+      - pandas
+      - h5py
+      - wandb
+      - torchsummary 
