@@ -11,6 +11,7 @@ modes = ["optimize-architecture", "best-training", "testing"]
 RED = "\033[31m"
 config = App.config()
 
+
 def select_mode_from_config():
     # we need this for color coded print statements
     colorama.init(autoreset=True)
@@ -28,6 +29,7 @@ def select_mode_from_config():
             return Mode.TRAIN
         case "optimize-architecture":
             return Mode.OPTIMIZE
+
 
 def is_valid_config():
     # No sections => File doesn't exist or is missing sections
@@ -81,3 +83,12 @@ def is_valid_config():
         return False
 
     return True
+
+
+def get_id_list_path():
+    paths_section = config["FILE_PATHS"]
+    return Path(paths_section.get('id_list'))
+
+def get_embeddings_path():
+    paths_section = config["FILE_PATHS"]
+    return Path(paths_section.get('embeddings'))
