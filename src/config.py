@@ -20,7 +20,7 @@ class App:
                                 metavar="file_path")
             args = parser.parse_args()
             App.file_path = os.path.normpath(args.f)
-            print(f'Used filepath is: {App.file_path}')
+            print(f'Used config filepath is: {App.file_path}')
         if App._conf is None:
             App._conf = configparser.ConfigParser()
             App._conf.read(App.file_path)
