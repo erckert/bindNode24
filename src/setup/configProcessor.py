@@ -5,22 +5,29 @@ import pathvalidate
 from pathlib import Path
 from config import App
 from colorama import Fore
+from misc.enums import Mode
 
 modes = ["optimize-architecture", "best-training", "testing"]
 RED = "\033[31m"
 config = App.config()
 
-
-def select_model_from_config(device):
+def select_mode_from_config():
     # we need this for color coded print statements
     colorama.init(autoreset=True)
 
     if not is_valid_config():
         sys.exit("Config is invalid. Please provide a valid config file.")
     print("Config file is valid")
-    # TODO: add model selection for pretrained bindNode models
-    return None
 
+    general_section = config["DEFAULT"]
+    mode = general_section["mode"].lower()
+    match mode:
+        case "testing":
+            return Mode.PREDICT
+        case "best-training":
+            return Mode.TRAIN
+        case "optimize-architecture":
+            return Mode.OPTIMIZE
 
 def is_valid_config():
     # No sections => File doesn't exist or is missing sections
@@ -64,6 +71,13 @@ def is_valid_config():
     # check if structure path exists
     if not Path(paths_section["3d_structure_dir"]).exists():
         print(Fore.RED + f"WARNING: File {paths_section.get('3d_structure_dir')} does not exist")
+        return False
+
+    model_section = config["MODEL"]
+    # check if cutoff is a number smaller 1
+    if not model_section.getfloat('cutoff') < 1.0:
+        print(Fore.RED + f"WARNING: Cutoff {model_section.getfloat('cutoff')} is not a valid cutoff. "
+                         f"Set cutoff to a value between 0 and 1")
         return False
 
     return True
