@@ -15,9 +15,23 @@ The implementation of bindNode24 builds on top of bindNode23 [2], a method to pr
  
 ### Usage
 
+
 `develop_bindNode23.py` provides the code to reproduce the bindEmbed21DL development (hyperparameter optimization, training, performance assessment on the test set).
 
 All needed files and paths can be set in `config.py` (marked as TODOs).
+
+#### Run code
+
+To run the code execute:
+```
+python src/main.py
+```
+
+If you want to use a different `.ini` file use 
+```
+python src/main.py -f FILEPATH
+```
+instead.
 
 ### Data
 
