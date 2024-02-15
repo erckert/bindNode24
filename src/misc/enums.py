@@ -1,8 +1,8 @@
-from enum import Enum
+from enum import Enum, auto
 
 
 class Mode(Enum):
-    PREDICT = 1
-    TRAIN = 2
-    OPTIMIZE = 3
+    PREDICT = auto()
+    TRAIN = auto()
+    OPTIMIZE = auto()
 
