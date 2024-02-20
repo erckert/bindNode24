@@ -89,6 +89,12 @@ def get_id_list_path():
     paths_section = config["FILE_PATHS"]
     return Path(paths_section.get('id_list'))
 
+
 def get_embeddings_path():
     paths_section = config["FILE_PATHS"]
     return Path(paths_section.get('embeddings'))
+
+
+def get_sequence_path():
+    paths_section = config["FILE_PATHS"]
+    return Path(paths_section.get('fasta_file_path'))

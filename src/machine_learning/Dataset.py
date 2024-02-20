@@ -1,14 +1,15 @@
-from setup.configProcessor import get_id_list_path, get_embeddings_path
+from setup.configProcessor import get_id_list_path, get_embeddings_path, get_sequence_path
 
 import numpy as np
 import h5py
+import fastapy
 
 
 class BindingResidueDataset:
     def __init__(self):
         self.protein_ids = self.get_id_list()
         self.embeddings = self.get_embeddings(self.protein_ids)
-        self.sequences = {}
+        self.sequences = self.get_sequences(self.protein_ids)
         self.structures = {}
 
     def __len__(self):
@@ -35,5 +36,19 @@ class BindingResidueDataset:
         embedding_h5 = h5py.File(get_embeddings_path(), 'r')
         for key, value in embedding_h5.items():
             if key in protein_ids:
-                embeddings[key] = np.array(value[:, :1024], dtype=np.float32)
+                embeddings[key] = np.array(value[:, :], dtype=np.float32)
         return embeddings
+
+    @staticmethod
+    def get_structures(protein_ids):
+        protein_structures = {}
+        # TODO
+        return protein_structures
+
+    @staticmethod
+    def get_sequences(protein_ids):
+        protein_sequences = {}
+        for record in fastapy.parse(get_sequence_path()):
+            if record.id in protein_ids:
+                protein_sequences[record.id] = record.seq
+        return protein_sequences
