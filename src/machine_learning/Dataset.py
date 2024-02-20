@@ -10,14 +10,14 @@ class BindingResidueDataset:
         self.protein_ids = self.get_id_list()
         self.embeddings = self.get_embeddings(self.protein_ids)
         self.sequences = self.get_sequences(self.protein_ids)
-        self.structures = {}
+        self.connectivity_matrices = self.get_connectivity(self.protein_ids, self.sequences)
 
     def __len__(self):
         return len(self.protein_ids)
 
     def __getitem__(self, item):
         protein_id = self.protein_ids[item]
-        return self.embeddings[protein_id], self.sequences[protein_id], self.structures[protein_id]
+        return self.embeddings[protein_id], self.sequences[protein_id], self.connectivity_matrices[protein_id]
 
     @staticmethod
     def get_id_list():
@@ -40,10 +40,16 @@ class BindingResidueDataset:
         return embeddings
 
     @staticmethod
-    def get_structures(protein_ids):
-        protein_structures = {}
-        # TODO
-        return protein_structures
+    def get_connectivity(protein_ids, protein_sequences):
+        connectivity_matrices = {}
+
+        # Dummy method to add all protein ids to structure dict and create a matrix that represents the backbone
+        for protein_id in protein_ids:
+            seq_length = len(protein_sequences[protein_id])
+            connectivity_matrices[protein_id] = np.eye(seq_length) + np.eye(seq_length, k=1) + np.eye(seq_length, k=-1)
+
+        # TODO: Fix me!
+        return connectivity_matrices
 
     @staticmethod
     def get_sequences(protein_ids):
