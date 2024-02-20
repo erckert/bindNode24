@@ -98,3 +98,9 @@ def get_embeddings_path():
 def get_sequence_path():
     paths_section = config["FILE_PATHS"]
     return Path(paths_section.get('fasta_file_path'))
+
+
+def get_model_dir():
+    model_section = config["MODEL"]
+    return Path(model_section.get('model_folder'))
+
