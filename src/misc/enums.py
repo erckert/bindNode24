@@ -6,3 +6,9 @@ class Mode(Enum):
     TRAIN = auto()
     OPTIMIZE = auto()
 
+
+class ModelType(Enum):
+    GCNCONV = auto()
+    SAGECONV = auto()
+    SAGECONVMLP = auto()
+    SAGECONVGATMLP = auto()
