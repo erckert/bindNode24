@@ -5,14 +5,14 @@ import pathvalidate
 from pathlib import Path
 from config import App
 from colorama import Fore
-from misc.enums import Mode
+from misc.enums import Mode, ModelType
 
 modes = ["optimize-architecture", "best-training", "testing"]
 RED = "\033[31m"
 config = App.config()
 
 
-def select_mode_from_config():
+def validate_config():
     # we need this for color coded print statements
     colorama.init(autoreset=True)
 
@@ -20,6 +20,8 @@ def select_mode_from_config():
         sys.exit("Config is invalid. Please provide a valid config file.")
     print("Config file is valid")
 
+
+def select_mode_from_config():
     general_section = config["DEFAULT"]
     mode = general_section["mode"].lower()
     match mode:
@@ -29,6 +31,23 @@ def select_mode_from_config():
             return Mode.TRAIN
         case "optimize-architecture":
             return Mode.OPTIMIZE
+
+
+def select_model_type_from_config():
+    # we need this for color coded print statements
+    colorama.init(autoreset=True)
+
+    model_section = config["MODEL"]
+    model = model_section["model_type"].lower()
+    match model:
+        case "gcnconv":
+            return ModelType.GCNCONV
+        case "sageconv":
+            return ModelType.SAGECONV
+        case "sageconvmlp":
+            return ModelType.SAGECONVMLP
+        case "sageconvgatmlp":
+            return ModelType.SAGECONVGATMLP
 
 
 def is_valid_config():
