@@ -12,3 +12,9 @@ class ModelType(Enum):
     SAGECONV = auto()
     SAGECONVMLP = auto()
     SAGECONVGATMLP = auto()
+
+
+class LabelType(Enum):
+    METAL = auto()
+    SMALL = auto()
+    NUCLEAR = auto()
