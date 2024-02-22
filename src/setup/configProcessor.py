@@ -25,7 +25,7 @@ def select_mode_from_config():
     general_section = config["DEFAULT"]
     mode = general_section["mode"].lower()
     match mode:
-        case "testing":
+        case "predict":
             return Mode.PREDICT
         case "best-training":
             return Mode.TRAIN
@@ -116,10 +116,37 @@ def get_embeddings_path():
 
 def get_sequence_path():
     paths_section = config["FILE_PATHS"]
-    return Path(paths_section.get('fasta_file_path'))
+    return paths_section.getInt()
 
 
-def get_model_dir():
+def get_weight_dir():
     model_section = config["MODEL"]
-    return Path(model_section.get('model_folder'))
+    return Path(model_section.get('weight_folder'))
 
+
+def get_in_channels():
+    model_section = config["MODEL"]
+    return model_section.getint('in_channels')
+
+
+def get_out_channels():
+    model_section = config["MODEL"]
+    return model_section.getint('out_channels')
+
+
+def get_feature_channels(only_first_value=False):
+    training_section = config["TRAINING_PARAMETERS"]
+    feature_list = [int(item) for item in training_section.get('features').split(',')]
+    if not only_first_value:
+        return feature_list
+    else:
+        return feature_list[0]
+
+
+def get_dropouts(only_first_value=False):
+    training_section = config["TRAINING_PARAMETERS"]
+    dropout_list = [float(item) for item in training_section.get('dropout').split(',')]
+    if not only_first_value:
+        return dropout_list
+    else:
+        return dropout_list[0]
