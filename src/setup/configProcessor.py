@@ -5,7 +5,7 @@ import pathvalidate
 from pathlib import Path
 from config import App
 from colorama import Fore
-from misc.enums import Mode, ModelType
+from misc.enums import Mode, ModelType, LabelType
 
 modes = ["optimize-architecture", "best-training", "testing"]
 RED = "\033[31m"
@@ -117,6 +117,17 @@ def get_embeddings_path():
 def get_sequence_path():
     paths_section = config["FILE_PATHS"]
     return Path(paths_section.get('fasta_file_path'))
+
+
+def get_label_path(label_type):
+    label_section = config["LABELS"]
+    match label_type:
+        case LabelType.METAL:
+            return Path(label_section.get('metal_label_file'))
+        case LabelType.SMALL:
+            return Path(label_section.get('small_label_file'))
+        case LabelType.NUCLEAR:
+            return Path(label_section.get('nuclear_label_file'))
 
 
 def get_weight_dir():
