@@ -39,7 +39,7 @@ instead.
 
 The data set used for training and testing was extracted from BioLip [4]. The UniProt identifiers for the 5 splits used during cross-validation (DevSet1014), the test set (TestSet300), and the independent set of proteins added to BioLip after November 2019 (TestSetNew46) as well as the corresponding FASTA sequences and used binding annotations are made available in the `data` folder.
 
-The trained models are available in the `trained_models` folder.
+The weights for pretrained models are available in the `pretrained_model_weights` folder.
 
 ProtT5 embeddings can be generated using [the bio_embeddings pipeline](https://github.com/sacdallago/bio_embeddings) [5]. To use them with `bindEmbed21`, they need to be converted to use the correct keys. A script for the conversion can be found in the folder `utils`.
 
