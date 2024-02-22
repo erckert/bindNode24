@@ -116,7 +116,7 @@ def get_embeddings_path():
 
 def get_sequence_path():
     paths_section = config["FILE_PATHS"]
-    return paths_section.getInt()
+    return Path(paths_section.get('fasta_file_path'))
 
 
 def get_weight_dir():
