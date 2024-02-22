@@ -1,4 +1,5 @@
-from setup.configProcessor import get_id_list_path, get_embeddings_path, get_sequence_path
+from setup.configProcessor import get_id_list_path, get_embeddings_path, get_sequence_path, get_label_path
+from misc.enums import LabelType
 
 import numpy as np
 import h5py
@@ -58,3 +59,45 @@ class BindingResidueDataset:
             if record.id in protein_ids:
                 protein_sequences[record.id] = record.seq
         return protein_sequences
+
+
+class BindingResidueDatasetWithLabels(BindingResidueDataset):
+    def __init__(self):
+        super(BindingResidueDatasetWithLabels, self).__init__()
+        self.labels = self.get_labels(self.sequences)
+
+    def get_labels(self, protein_sequences):
+        labels = {}
+        metal_labels = self.generate_label_dict(get_label_path(LabelType.METAL))
+        small_labels = self.generate_label_dict(get_label_path(LabelType.SMALL))
+        nuclear_labels = self.generate_label_dict(get_label_path(LabelType.NUCLEAR))
+
+        for protein_id in protein_sequences.keys():
+            length = len(protein_sequences[protein_id])
+            label_array = np.zeros((length, 3))
+            if protein_id in metal_labels:
+                for metal_label in metal_labels:
+                    label_array[metal_label, 0] = 1
+            if protein_id in small_labels:
+                for small_label in small_labels:
+                    label_array[small_label, 1] = 1
+            if protein_id in nuclear_labels:
+                for nuclear_label in nuclear_labels:
+                    label_array[nuclear_label, 2] = 1
+            labels[protein_id] = label_array
+
+        return labels
+
+    @staticmethod
+    def generate_label_dict(file_path):
+        labels = {}
+        with open(file_path, 'r') as fh:
+            lines = fh.readlines()
+            for line in lines:
+                parts = line.split(' ')
+                if len(parts) == 2:
+                    protein_id = parts[0]
+                    # label file is 1 indexed so we need to shift all entries by 1
+                    binding_residues = [int(entry)-1 for entry in parts[1].split(',')]
+                    labels[protein_id] = binding_residues
+        return labels
