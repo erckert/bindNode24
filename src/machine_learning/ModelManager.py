@@ -31,6 +31,7 @@ def initialize_model_with_config_params():
             classifier = SAGEConvGATMLPModel()
     return classifier
 
+
 def save_classifier_torch(classifier, model_path):
     """Save pre-trained model"""
     torch.save(classifier.state_dict(), model_path)
