@@ -5,8 +5,10 @@ import numpy as np
 import h5py
 import fastapy
 
+from torch_geometric.data import Dataset
 
-class BindingResidueDataset:
+
+class BindingResidueDataset(Dataset):
     def __init__(self):
         self.protein_ids = self.get_id_list()
         self.embeddings = self.get_embeddings(self.protein_ids)
