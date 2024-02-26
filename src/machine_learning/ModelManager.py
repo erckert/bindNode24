@@ -5,17 +5,14 @@ from misc.enums import ModelType
 from machine_learning.Models import GCNConvModel, SAGEConvModel, SAGEConvMLPModel, SAGEConvGATMLPModel
 
 
-def save_classifier_torch(classifier, model_path):
-    """Save pre-trained model"""
-    torch.save(classifier.state_dict(), model_path)
-
-
-def load_classifier_torch(model_path):
-    """ Load pre-saved model """
+def select_device():
     if torch.cuda.is_available():
-        device = 'cuda:0'
+        return 'cuda:0'
     else:
-        device = 'cpu'
+        return 'cpu'
+
+
+def initialize_model_with_config_params():
     model_type = select_model_type_from_config()
     classifier = None
     match model_type:
@@ -32,5 +29,23 @@ def load_classifier_torch(model_path):
             classifier = SAGEConvMLPModel()
         case ModelType.SAGECONVGATMLP:
             classifier = SAGEConvGATMLPModel()
+    return classifier
+
+def save_classifier_torch(classifier, model_path):
+    """Save pre-trained model"""
+    torch.save(classifier.state_dict(), model_path)
+
+
+def load_classifier_torch(model_path):
+    """ Load pre-saved model """
+    device = select_device()
+    classifier = initialize_model_with_config_params()
     classifier.load_state_dict(torch.load(model_path, map_location=device))
+    return classifier
+
+
+def initialize_untrained_model():
+    device = select_device()
+    classifier = initialize_model_with_config_params()
+    classifier.to(device)
     return classifier
