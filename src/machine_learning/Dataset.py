@@ -20,6 +20,37 @@ class BindingResidueDataset:
         protein_id = self.protein_ids[item]
         return self.embeddings[protein_id], self.sequences[protein_id], self.connectivity_matrices[protein_id]
 
+    def train_val_split(self, train_ids, val_ids):
+        train_subset = self.create_subset(train_ids)
+        val_subset = self.create_subset(val_ids)
+        return train_subset, val_subset
+
+    def create_subset(self, subset_ids):
+        subset = BindingResidueDataset.__new__(BindingResidueDataset)
+        self.collect_subset_data(subset_ids, subset)
+        return subset
+
+    def collect_subset_data(self, subset_ids, subset):
+        subset.protein_ids = [protein_id for protein_id in subset_ids]
+        subset.embeddings = dict(
+            zip(
+                subset.protein_ids,
+                [self.embeddings[protein_id] for protein_id in subset.protein_ids]
+            )
+        )
+        subset.sequences = dict(
+            zip(
+                subset.protein_ids,
+                [self.sequences[protein_id] for protein_id in subset.protein_ids]
+            )
+        )
+        subset.connectivity_matrices = dict(
+            zip(
+                subset.protein_ids,
+                [self.connectivity_matrices[protein_id] for protein_id in subset.protein_ids]
+            )
+        )
+
     @staticmethod
     def get_id_list():
         id_list = []
@@ -65,6 +96,20 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
     def __init__(self):
         super(BindingResidueDatasetWithLabels, self).__init__()
         self.labels = self.get_labels(self.sequences)
+
+    def create_subset(self, subset_ids):
+        subset = BindingResidueDatasetWithLabels.__new__(BindingResidueDatasetWithLabels)
+        self.collect_subset_data(subset_ids, subset)
+        return subset
+
+    def collect_subset_data(self, subset_ids, subset):
+        super().collect_subset_data(subset_ids, subset)
+        subset.labels = dict(
+            zip(
+                subset.protein_ids,
+                [self.labels[protein_id] for protein_id in subset.protein_ids]
+            )
+        )
 
     def get_labels(self, protein_sequences):
         labels = {}
