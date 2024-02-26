@@ -1,6 +1,7 @@
 import sys
 import colorama
 import pathvalidate
+import os
 
 from pathlib import Path
 from config import App
@@ -119,6 +120,25 @@ def get_sequence_path():
     return Path(paths_section.get('fasta_file_path'))
 
 
+def get_cv_splits():
+    cv_split_ids = []
+    paths_section = config["FILE_PATHS"]
+    cv_split_folder = Path(paths_section.get('cv_split_id_files_folder'))
+    cv_split_files = os.listdir(cv_split_folder)
+
+    for file in cv_split_files:
+        cv_split = []
+        with open(os.path.join(cv_split_folder, file), 'r') as fh:
+            lines = fh.readlines()
+            for line in lines:
+                protein_id = line.strip()
+                if protein_id != "":
+                    cv_split.append(protein_id)
+            cv_split_ids.append(cv_split)
+
+    return cv_split_ids
+
+
 def get_label_path(label_type):
     label_section = config["LABELS"]
     match label_type:
@@ -161,3 +181,13 @@ def get_dropouts(only_first_value=False):
         return dropout_list
     else:
         return dropout_list[0]
+
+
+def get_batch_size(only_first_value=False):
+    training_section = config["TRAINING_PARAMETERS"]
+    batch_size_list = [float(item) for item in training_section.get('batchsize').split(',')]
+    if not only_first_value:
+        return batch_size_list
+    else:
+        return batch_size_list[0]
+
