@@ -13,3 +13,10 @@ def seed_all(seed=10):
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
+
+def select_device():
+    if torch.cuda.is_available():
+        return 'cuda:0'
+    else:
+        return 'cpu'
