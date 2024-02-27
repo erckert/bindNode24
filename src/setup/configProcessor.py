@@ -2,6 +2,7 @@ import sys
 import colorama
 import pathvalidate
 import os
+import re
 
 from pathlib import Path
 from config import App
@@ -166,7 +167,7 @@ def get_out_channels():
 
 
 def get_feature_channels(only_first_value=False):
-    training_section = config["TRAINING_PARAMETERS"]
+    training_section = config["MODEL_PARAMETERS"]
     feature_list = [int(item) for item in training_section.get('features').split(',')]
     if not only_first_value:
         return feature_list
@@ -175,7 +176,7 @@ def get_feature_channels(only_first_value=False):
 
 
 def get_dropouts(only_first_value=False):
-    training_section = config["TRAINING_PARAMETERS"]
+    training_section = config["MODEL_PARAMETERS"]
     dropout_list = [float(item) for item in training_section.get('dropout').split(',')]
     if not only_first_value:
         return dropout_list
@@ -184,10 +185,41 @@ def get_dropouts(only_first_value=False):
 
 
 def get_batch_size(only_first_value=False):
-    training_section = config["TRAINING_PARAMETERS"]
-    batch_size_list = [float(item) for item in training_section.get('batchsize').split(',')]
+    training_section = config["MODEL_PARAMETERS"]
+    batch_size_list = [int(item) for item in training_section.get('batchsize').split(',')]
     if not only_first_value:
         return batch_size_list
     else:
         return batch_size_list[0]
 
+
+def get_epochs(only_first_value=False):
+    training_section = config["MODEL_PARAMETERS"]
+    epochs_list = [int(item) for item in training_section.get('epochs').split(',')]
+    if not only_first_value:
+        return epochs_list
+    else:
+        return epochs_list[0]
+
+
+def get_optimizer_arguments(only_first_value=False):
+    optimizer_section = config["OPTIMIZER_PARAMETERS"]
+    learning_rates = [float(item) for item in optimizer_section.get('learning_rate').split(',')]
+    betas = [[float(beta) for beta in item.split(',')] for item in re.findall(r'\[(.*?)\]', optimizer_section.get('betas'))]
+    epsilons = [float(item) for item in optimizer_section.get('epsilon').split(',')]
+    weight_decays = [float(item) for item in optimizer_section.get('weight_decay').split(',')]
+    if not only_first_value:
+        optimizer_arguments = {
+            "lr": learning_rates,
+            "betas": betas,
+            "eps": epsilons,
+            "weight_decay": weight_decays
+        }
+    else:
+        optimizer_arguments = {
+            "lr": learning_rates[0],
+            "betas": betas[0],
+            "eps": epsilons[0],
+            "weight_decay": weight_decays[0]
+        }
+    return optimizer_arguments
