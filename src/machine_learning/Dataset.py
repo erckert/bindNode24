@@ -4,23 +4,43 @@ from misc.enums import LabelType
 import numpy as np
 import h5py
 import fastapy
+import torch
+import copy
 
-from torch_geometric.data import Dataset
+from torch_geometric.data import Dataset, Data
 
 
 class BindingResidueDataset(Dataset):
     def __init__(self):
+        super().__init__('.', None, None, None)
         self.protein_ids = self.get_id_list()
         self.embeddings = self.get_embeddings(self.protein_ids)
         self.sequences = self.get_sequences(self.protein_ids)
         self.connectivity_matrices = self.get_connectivity(self.protein_ids, self.sequences)
 
-    def __len__(self):
+    def len(self):
         return len(self.protein_ids)
 
-    def __getitem__(self, item):
+    def get(self, item):
         protein_id = self.protein_ids[item]
-        return self.embeddings[protein_id], self.sequences[protein_id], self.connectivity_matrices[protein_id]
+        protein_graph_edges = np.array(self.get_connectivity_matrix(item).nonzero())
+        protein_graph = Data(
+            x=torch.Tensor(self.embeddings[protein_id]),
+            edge_index=torch.LongTensor(protein_graph_edges),
+        )
+        return protein_graph
+
+    def get_embedding(self, item):
+        protein_id = self.protein_ids[item]
+        return self.embeddings[protein_id]
+
+    def get_sequence(self, item):
+        protein_id = self.protein_ids[item]
+        return self.sequences[protein_id]
+
+    def get_connectivity_matrix(self, item):
+        protein_id = self.protein_ids[item]
+        return self.connectivity_matrices[protein_id]
 
     def train_val_split(self, train_ids, val_ids):
         train_subset = self.create_subset(train_ids)
@@ -28,7 +48,7 @@ class BindingResidueDataset(Dataset):
         return train_subset, val_subset
 
     def create_subset(self, subset_ids):
-        subset = BindingResidueDataset.__new__(BindingResidueDataset)
+        subset = copy.deepcopy(self)
         self.collect_subset_data(subset_ids, subset)
         return subset
 
@@ -99,10 +119,15 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
         super(BindingResidueDatasetWithLabels, self).__init__()
         self.labels = self.get_labels(self.sequences)
 
-    def create_subset(self, subset_ids):
-        subset = BindingResidueDatasetWithLabels.__new__(BindingResidueDatasetWithLabels)
-        self.collect_subset_data(subset_ids, subset)
-        return subset
+    def get(self, item):
+        protein_id = self.protein_ids[item]
+        protein_graph_edges = np.array(self.get_connectivity_matrix(item).nonzero())
+        protein_graph = Data(
+            x=torch.Tensor(self.get_embedding(item)),
+            edge_index=torch.LongTensor(protein_graph_edges),
+            y=torch.Tensor(self.labels[protein_id])
+        )
+        return protein_graph
 
     def collect_subset_data(self, subset_ids, subset):
         super().collect_subset_data(subset_ids, subset)
