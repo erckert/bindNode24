@@ -12,6 +12,51 @@ def run_optimization():
     return None
 
 
+def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
+    prediction_list = []
+    label_list = []
+    train_loss = 0
+    train_loss_count = 0
+
+    model.train()
+    for data_graph in train_loader:
+        optimizer.zero_grad()
+        data_graph = data_graph.to(select_device())
+
+        predictions = model.forward(
+            data_graph.x,
+            data_graph.edge_index,
+            data_graph.edge_index_cutoff,
+            data_graph.edge_features
+        )
+        # don't consider padded positions for loss calculation
+
+        loss_el = loss_function(predictions, data_graph.y)
+        # pred is a tensor of shape: 69203, 3 num_nodes, data_graph.batch is tensor 69k, 2
+
+        loss_norm = torch.sum(loss_el)
+        train_loss += loss_norm.item()
+        train_loss_count += 1
+
+        predictions = sigmoid(predictions)
+
+        loss_norm.backward()
+        optimizer.step()
+        torch.cuda.empty_cache()
+
+        prediction_list.append(predictions.detach().cpu())
+        label_list.append(data_graph.y.detach().cpu())
+    return prediction_list, label_list
+
+
+def validate_batch(model, validation_loader):
+    pass
+
+
+def evaluate_batch(training_predictions, validation_predictions, training_labels, validation_labels):
+    pass
+
+
 def train_and_validate(model, training_dataset, validation_dataset):
     train_loader = DataLoader(
         training_dataset,
@@ -33,33 +78,14 @@ def train_and_validate(model, training_dataset, validation_dataset):
     for epoch in range(get_epochs(only_first_value=True)):
         torch.cuda.empty_cache()
 
-        train_loss = val_loss = 0
-        train_loss_count = val_loss_count = 0
-
         # training
-        model.train()
-        for data_graph in train_loader:
-            optimizer.zero_grad()
-            data_graph = data_graph.to(select_device())
+        training_predictions, training_labels = train_batch(model, train_loader, optimizer, loss_function, sigmoid)
 
-            pred = model.forward(
-                data_graph.x,
-                data_graph.edge_index, data_graph.edge_index_cutoff, data_graph.edge_features
-            )
-            # don't consider padded positions for loss calculation
+        # validation
+        validation_predictions, validation_labels = validate_batch(model, validation_loader)
 
-            loss_el = loss_function(pred, data_graph.y)
-            # pred is a tensor of shape: 69203, 3 num_nodes, data_graph.batch is tensor 69k, 2
-
-            loss_norm = torch.sum(loss_el)
-            train_loss += loss_norm.item()
-            train_loss_count += 1
-
-            pred = sigmoid(pred)
-
-            loss_norm.backward()
-            optimizer.step()
-            torch.cuda.empty_cache()
+        #evaluation
+        evaluate_batch(training_predictions, validation_predictions, training_labels, validation_labels)
     return model
 
 
