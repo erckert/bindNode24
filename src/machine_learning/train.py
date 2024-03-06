@@ -12,15 +12,11 @@ def run_optimization():
     return None
 
 
-def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
-    prediction_list = []
-    label_list = []
-    train_loss = 0
-    train_loss_count = 0
-
-    model.train()
-    for data_graph in train_loader:
-        optimizer.zero_grad()
+def make_predictions(model, data_loader, loss, loss_count, optimizer, loss_function, sigmoid,
+                     prediction_list, label_list, backpropagate=True):
+    for data_graph in data_loader:
+        if backpropagate:
+            optimizer.zero_grad()
         data_graph = data_graph.to(select_device())
 
         predictions = model.forward(
@@ -35,22 +31,62 @@ def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
         # pred is a tensor of shape: 69203, 3 num_nodes, data_graph.batch is tensor 69k, 2
 
         loss_norm = torch.sum(loss_el)
-        train_loss += loss_norm.item()
-        train_loss_count += 1
+        loss += loss_norm.item()
+        loss_count += 1
 
         predictions = sigmoid(predictions)
-
-        loss_norm.backward()
-        optimizer.step()
-        torch.cuda.empty_cache()
-
         prediction_list.append(predictions.detach().cpu())
         label_list.append(data_graph.y.detach().cpu())
+
+        if backpropagate:
+            loss_norm.backward()
+            optimizer.step()
+            torch.cuda.empty_cache()
+
+
+def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
+    prediction_list = []
+    label_list = []
+    train_loss = 0
+    train_loss_count = 0
+
+    model.train()
+    make_predictions(
+        model,
+        train_loader,
+        train_loss,
+        train_loss_count,
+        optimizer,
+        loss_function,
+        sigmoid,
+        prediction_list,
+        label_list,
+        backpropagate=True
+    )
+
     return prediction_list, label_list
 
 
-def validate_batch(model, validation_loader):
-    pass
+def validate_batch(model, validation_loader, loss_function, sigmoid):
+    prediction_list = []
+    label_list = []
+    validation_loss = 0
+    validation_loss_count = 0
+
+    model.eval()
+    make_predictions(
+        model,
+        validation_loader,
+        validation_loss,
+        validation_loss_count,
+        None,
+        loss_function,
+        sigmoid,
+        prediction_list,
+        label_list,
+        backpropagate=False
+    )
+    return prediction_list, label_list
 
 
 def evaluate_batch(training_predictions, validation_predictions, training_labels, validation_labels):
@@ -82,7 +118,7 @@ def train_and_validate(model, training_dataset, validation_dataset):
         training_predictions, training_labels = train_batch(model, train_loader, optimizer, loss_function, sigmoid)
 
         # validation
-        validation_predictions, validation_labels = validate_batch(model, validation_loader)
+        validation_predictions, validation_labels = validate_batch(model, validation_loader, loss_function, sigmoid)
 
         #evaluation
         evaluate_batch(training_predictions, validation_predictions, training_labels, validation_labels)
