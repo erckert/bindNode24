@@ -3,6 +3,7 @@ from torch_geometric.loader import DataLoader
 
 from machine_learning.Dataset import BindingResidueDatasetWithLabels
 from machine_learning.ModelManager import initialize_untrained_model
+from machine_learning.Evaluator import BindingResiduePredictionEvaluator
 from setup.configProcessor import get_cv_splits, get_batch_size, get_optimizer_arguments, get_epochs
 from setup.generalSetup import select_device
 
@@ -12,8 +13,10 @@ def run_optimization():
     return None
 
 
-def make_predictions(model, data_loader, loss, loss_count, optimizer, loss_function, sigmoid,
+def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
                      prediction_list, label_list, backpropagate=True):
+    loss = 0
+    loss_count = 0
     for data_graph in data_loader:
         if backpropagate:
             optimizer.zero_grad()
@@ -43,19 +46,17 @@ def make_predictions(model, data_loader, loss, loss_count, optimizer, loss_funct
             optimizer.step()
             torch.cuda.empty_cache()
 
+    return loss, loss_count
+
 
 def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
     prediction_list = []
     label_list = []
-    train_loss = 0
-    train_loss_count = 0
 
     model.train()
-    make_predictions(
+    train_loss, train_loss_count = make_predictions(
         model,
         train_loader,
-        train_loss,
-        train_loss_count,
         optimizer,
         loss_function,
         sigmoid,
@@ -64,21 +65,17 @@ def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
         backpropagate=True
     )
 
-    return prediction_list, label_list
+    return prediction_list, label_list, train_loss, train_loss_count
 
 
 def validate_batch(model, validation_loader, loss_function, sigmoid):
     prediction_list = []
     label_list = []
-    validation_loss = 0
-    validation_loss_count = 0
 
     model.eval()
-    make_predictions(
+    validation_loss, validation_loss_count = make_predictions(
         model,
         validation_loader,
-        validation_loss,
-        validation_loss_count,
         None,
         loss_function,
         sigmoid,
@@ -86,11 +83,7 @@ def validate_batch(model, validation_loader, loss_function, sigmoid):
         label_list,
         backpropagate=False
     )
-    return prediction_list, label_list
-
-
-def evaluate_batch(training_predictions, validation_predictions, training_labels, validation_labels):
-    pass
+    return prediction_list, label_list, validation_loss, validation_loss_count
 
 
 def train_and_validate(model, training_dataset, validation_dataset):
@@ -106,6 +99,9 @@ def train_and_validate(model, training_dataset, validation_dataset):
         shuffle=True
     )
 
+    training_evaluator = BindingResiduePredictionEvaluator()
+    validation_evaluator = BindingResiduePredictionEvaluator()
+
     loss_function = torch.nn.BCEWithLogitsLoss(reduction="none")
     sigmoid = torch.nn.Sigmoid()
     model.to(select_device())
@@ -115,13 +111,35 @@ def train_and_validate(model, training_dataset, validation_dataset):
         torch.cuda.empty_cache()
 
         # training
-        training_predictions, training_labels = train_batch(model, train_loader, optimizer, loss_function, sigmoid)
+        training_predictions, training_labels, train_loss, train_loss_count = train_batch(
+            model,
+            train_loader,
+            optimizer,
+            loss_function,
+            sigmoid
+        )
 
         # validation
-        validation_predictions, validation_labels = validate_batch(model, validation_loader, loss_function, sigmoid)
+        validation_predictions, validation_labels, validation_loss, validation_loss_count = validate_batch(
+            model,
+            validation_loader,
+            loss_function,
+            sigmoid
+        )
 
         #evaluation
-        evaluate_batch(training_predictions, validation_predictions, training_labels, validation_labels)
+        training_evaluator.evaluate_per_batch(
+            training_predictions,
+            training_labels,
+            train_loss,
+            train_loss_count
+        )
+        validation_evaluator.evaluate_per_batch(
+            validation_predictions,
+            validation_labels,
+            validation_loss,
+            validation_loss_count
+        )
     return model
 
 
