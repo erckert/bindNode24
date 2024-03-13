@@ -1,4 +1,5 @@
 import math
+import torch
 
 
 class BindingResiduePredictionEvaluator:
@@ -20,21 +21,25 @@ class BindingResiduePredictionEvaluator:
             "accuracy": []
         }
 
-    def evaluate_per_batch(self, predictions, labels, loss, loss_count):
-        tp, fp, tn, fn = self.compute_confusion_matrix(predictions, labels)
+    def evaluate_per_epoch(self, predictions, labels, loss, loss_count):
+        tp, fp, tn, fn = self.compute_confusion_matrix_per_epoch(predictions, labels)
         performances = {
             "loss": self.compute_loss(loss, loss_count),
-            "mcc": self.compute_mcc(tp, fp, tn, fn),
-            "precision": self.compute_precision(tp, fp),
-            "recall": self.compute_recall(tp, fn),
-            "f1": self.compute_f1(tp, fp, fn),
-            "accuracy": self.compute_accuracy(tp, fp, tn, fn)
+            "mcc": float(self.compute_mcc(tp, fp, tn, fn)),
+            "precision": float(self.compute_precision(tp, fp)),
+            "recall": float(self.compute_recall(tp, fn)),
+            "f1": float(self.compute_f1(tp, fp, fn)),
+            "accuracy": float(self.compute_accuracy(tp, fp, tn, fn))
         }
-        return performances
+        self.per_epoch_performances["loss"].append(performances["loss"])
+        self.per_epoch_performances["mcc"].append(performances["mcc"])
+        self.per_epoch_performances["precision"].append(performances["precision"])
+        self.per_epoch_performances["recall"].append(performances["recall"])
+        self.per_epoch_performances["f1"].append(performances["f1"])
+        self.per_epoch_performances["accuracy"].append(performances["accuracy"])
 
-    def compute_loss(self, losses, loss_count):
-        #TODO: implement me
-        pass
+    def compute_loss(self, loss, loss_count):
+        return loss/loss_count
 
     @staticmethod
     def compute_mcc(tp, fp, tn, fn):
@@ -70,10 +75,14 @@ class BindingResiduePredictionEvaluator:
         return (tp + tn) / (tp + tn + fn + fp)
 
     @staticmethod
-    def compute_confusion_matrix(predictions, labels):
-        #TODO: implement me
+    def compute_confusion_matrix_per_epoch(predictions, labels):
         tp = 0
         fp = 0
         tn = 0
         fn = 0
+        for prediction_graph, label_graph in zip(predictions, labels):
+            tp += torch.sum(torch.ge(prediction_graph, 0.5) * torch.ge(label_graph, 0.5))
+            tn += torch.sum(torch.lt(prediction_graph, 0.5) * torch.lt(label_graph, 0.5))
+            fp += torch.sum(torch.ge(prediction_graph, 0.5) * torch.lt(label_graph, 0.5))
+            fn += torch.sum(torch.lt(prediction_graph, 0.5) * torch.ge(label_graph, 0.5))
         return tp, fp, tn, fn
