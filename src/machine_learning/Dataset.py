@@ -150,13 +150,13 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
             length = len(protein_sequences[protein_id])
             label_array = np.zeros((length, 3))
             if protein_id in metal_labels:
-                for metal_label in metal_labels:
+                for metal_label in metal_labels[protein_id]:
                     label_array[metal_label, 0] = 1
             if protein_id in small_labels:
-                for small_label in small_labels:
+                for small_label in small_labels[protein_id]:
                     label_array[small_label, 1] = 1
             if protein_id in nuclear_labels:
-                for nuclear_label in nuclear_labels:
+                for nuclear_label in nuclear_labels[protein_id]:
                     label_array[nuclear_label, 2] = 1
             labels[protein_id] = label_array
 
@@ -168,7 +168,8 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
         with open(file_path, 'r') as fh:
             lines = fh.readlines()
             for line in lines:
-                parts = line.split(' ')
+                line = line.rstrip()
+                parts = line.split('\t')
                 if len(parts) == 2:
                     protein_id = parts[0]
                     # label file is 1 indexed so we need to shift all entries by 1
