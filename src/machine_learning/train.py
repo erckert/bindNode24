@@ -17,20 +17,20 @@ def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
                      prediction_list, label_list, backpropagate=True):
     loss = 0
     loss_count = 0
-    for data_graph in data_loader:
+    for data_batch in data_loader:
         if backpropagate:
             optimizer.zero_grad()
-        data_graph = data_graph.to(select_device())
+        data_batch = data_batch.to(select_device())
 
         predictions = model.forward(
-            data_graph.x,
-            data_graph.edge_index,
-            data_graph.edge_index_cutoff,
-            data_graph.edge_features
+            data_batch.x,
+            data_batch.edge_index,
+            data_batch.edge_index_cutoff,
+            data_batch.edge_features
         )
         # don't consider padded positions for loss calculation
 
-        loss_el = loss_function(predictions, data_graph.y)
+        loss_el = loss_function(predictions, data_batch.y)
         # pred is a tensor of shape: 69203, 3 num_nodes, data_graph.batch is tensor 69k, 2
 
         loss_norm = torch.sum(loss_el)
@@ -39,7 +39,7 @@ def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
 
         predictions = sigmoid(predictions)
         prediction_list.append(predictions.detach().cpu())
-        label_list.append(data_graph.y.detach().cpu())
+        label_list.append(data_batch.y.detach().cpu())
 
         if backpropagate:
             loss_norm.backward()
@@ -49,7 +49,7 @@ def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
     return loss, loss_count
 
 
-def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
+def train_epoch(model, train_loader, optimizer, loss_function, sigmoid):
     prediction_list = []
     label_list = []
 
@@ -68,7 +68,7 @@ def train_batch(model, train_loader, optimizer, loss_function, sigmoid):
     return prediction_list, label_list, train_loss, train_loss_count
 
 
-def validate_batch(model, validation_loader, loss_function, sigmoid):
+def validate_epoch(model, validation_loader, loss_function, sigmoid):
     prediction_list = []
     label_list = []
 
@@ -111,7 +111,7 @@ def train_and_validate(model, training_dataset, validation_dataset):
         torch.cuda.empty_cache()
 
         # training
-        training_predictions, training_labels, train_loss, train_loss_count = train_batch(
+        training_predictions, training_labels, train_loss, train_loss_count = train_epoch(
             model,
             train_loader,
             optimizer,
@@ -120,7 +120,7 @@ def train_and_validate(model, training_dataset, validation_dataset):
         )
 
         # validation
-        validation_predictions, validation_labels, validation_loss, validation_loss_count = validate_batch(
+        validation_predictions, validation_labels, validation_loss, validation_loss_count = validate_epoch(
             model,
             validation_loader,
             loss_function,
@@ -128,13 +128,13 @@ def train_and_validate(model, training_dataset, validation_dataset):
         )
 
         #evaluation
-        training_evaluator.evaluate_per_batch(
+        training_evaluator.evaluate_per_epoch(
             training_predictions,
             training_labels,
             train_loss,
             train_loss_count
         )
-        validation_evaluator.evaluate_per_batch(
+        validation_evaluator.evaluate_per_epoch(
             validation_predictions,
             validation_labels,
             validation_loss,
