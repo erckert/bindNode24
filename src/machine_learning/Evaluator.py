@@ -85,4 +85,9 @@ class BindingResiduePredictionEvaluator:
             tn += torch.sum(torch.lt(prediction_graph, 0.5) * torch.lt(label_graph, 0.5))
             fp += torch.sum(torch.ge(prediction_graph, 0.5) * torch.lt(label_graph, 0.5))
             fn += torch.sum(torch.lt(prediction_graph, 0.5) * torch.ge(label_graph, 0.5))
+
+        tp = float(tp)
+        fp = float(fp)
+        fn = float(fn)
+        tn = float(tn)
         return tp, fp, tn, fn
