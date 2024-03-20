@@ -1,5 +1,10 @@
 import math
+import os
 import torch
+import json
+
+from setup.configProcessor import get_result_dir, get_weight_dir, select_model_type_from_config, \
+    select_mode_from_config, get_model_parameter_dict, get_optimizer_arguments
 
 
 class BindingResiduePredictionEvaluator:
@@ -91,3 +96,15 @@ class BindingResiduePredictionEvaluator:
         fn = float(fn)
         tn = float(tn)
         return tp, fp, tn, fn
+
+    def write_evaluation_results(self, file_name):
+        result_path = os.path.join(str(get_result_dir()), f'{file_name}.json')
+        results = {
+            "model_type": str(select_model_type_from_config()),
+            "weight_dir": os.path.relpath(get_weight_dir()),
+            "mode": str(select_mode_from_config()),
+            "model_parameters": get_model_parameter_dict(True),
+            "optimizer_parameters": get_optimizer_arguments(True)
+        }
+        with open(result_path, 'w') as fh:
+            json.dump(results, fh)

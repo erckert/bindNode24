@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from config import App
 from colorama import Fore
+import torch.nn.functional as F
 from misc.enums import Mode, ModelType, LabelType
 
 modes = ["optimize-architecture", "best-training", "testing"]
@@ -121,6 +122,11 @@ def get_sequence_path():
     return Path(paths_section.get('fasta_file_path'))
 
 
+def get_result_dir():
+    paths_section = config["FILE_PATHS"]
+    return Path(paths_section.get('result_dir'))
+
+
 def get_cv_splits():
     cv_split_ids = []
     paths_section = config["FILE_PATHS"]
@@ -166,6 +172,11 @@ def get_out_channels():
     return model_section.getint('out_channels')
 
 
+def get_cutoff():
+    model_section = config["MODEL"]
+    return model_section.getfloat('cutoff')
+
+
 def get_feature_channels(only_first_value=False):
     training_section = config["MODEL_PARAMETERS"]
     feature_list = [int(item) for item in training_section.get('features').split(',')]
@@ -202,6 +213,57 @@ def get_epochs(only_first_value=False):
         return epochs_list[0]
 
 
+def is_early_stopping():
+    training_section = config["MODEL_PARAMETERS"]
+    return training_section.getboolean("early_stopping")
+
+
+def get_weights(only_first_value=False):
+    training_section = config["MODEL_PARAMETERS"]
+    weights_list = [[float(weight) for weight in item.split(',')] for item in re.findall(r'\[(.*?)\]', training_section.get('weights'))]
+    if not only_first_value:
+        return weights_list
+    else:
+        return weights_list[0]
+
+
+def get_embedding_cutoff(only_first_value=False):
+    training_section = config["MODEL_PARAMETERS"]
+    embedding_cutoff_list = [int(item) for item in training_section.get('cutoff_embeddings').split(',')]
+    if not only_first_value:
+        return embedding_cutoff_list
+    else:
+        return embedding_cutoff_list[0]
+
+
+def get_structure_cutoff(only_first_value=False):
+    training_section = config["MODEL_PARAMETERS"]
+    structure_cutoff_list = [int(item) for item in training_section.get('cutoff_structure').split(',')]
+    if not only_first_value:
+        return structure_cutoff_list
+    else:
+        return structure_cutoff_list[0]
+
+
+def get_activation():
+    training_section = config["MODEL_PARAMETERS"]
+    return eval(training_section.get("activation"))
+
+
+def get_activation_as_string():
+    training_section = config["MODEL_PARAMETERS"]
+    return training_section.get("activation")
+
+
+def get_dropouts_fcn(only_first_value=False):
+    training_section = config["MODEL_PARAMETERS"]
+    dropout_fcn_list = [float(item) for item in training_section.get('dropout_fcn').split(',')]
+    if not only_first_value:
+        return dropout_fcn_list
+    else:
+        return dropout_fcn_list[0]
+
+
 def get_optimizer_arguments(only_first_value=False):
     optimizer_section = config["OPTIMIZER_PARAMETERS"]
     learning_rates = [float(item) for item in optimizer_section.get('learning_rate').split(',')]
@@ -223,3 +285,23 @@ def get_optimizer_arguments(only_first_value=False):
             "weight_decay": weight_decays[0]
         }
     return optimizer_arguments
+
+
+def get_model_parameter_dict(only_first_value=False):
+    model_parameter_dict = {
+        "cutoff": get_cutoff(),
+        "in_channels": get_in_channels(),
+        "out_channels": get_out_channels(),
+        "features": get_feature_channels(only_first_value),
+        "dropout": get_dropouts(only_first_value),
+        "epochs": get_epochs(only_first_value),
+        "early_stopping": is_early_stopping(),
+        "weights": get_weights(only_first_value),
+        "cutoff_embeddings": get_embedding_cutoff(only_first_value),
+        "cutoff_structure": get_structure_cutoff(only_first_value),
+        "activation": get_activation_as_string(),
+        "batchsize": get_batch_size(only_first_value),
+        "droupout_fcn": get_dropouts_fcn(only_first_value)
+    }
+    return model_parameter_dict
+

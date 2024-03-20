@@ -1,10 +1,11 @@
 import torch
+import os
 from torch_geometric.loader import DataLoader
 
 from machine_learning.Dataset import BindingResidueDatasetWithLabels
-from machine_learning.ModelManager import initialize_untrained_model
+from machine_learning.ModelManager import initialize_untrained_model, save_classifier_torch
 from machine_learning.Evaluator import BindingResiduePredictionEvaluator
-from setup.configProcessor import get_cv_splits, get_batch_size, get_optimizer_arguments, get_epochs
+from setup.configProcessor import get_cv_splits, get_batch_size, get_optimizer_arguments, get_epochs, get_weight_dir
 from setup.generalSetup import select_device
 
 
@@ -140,7 +141,7 @@ def train_and_validate(model, training_dataset, validation_dataset):
             validation_loss,
             validation_loss_count
         )
-    return model
+    return model, training_evaluator, validation_evaluator
 
 
 def run_training():
@@ -158,6 +159,11 @@ def run_training():
 
         training_dataset, validation_dataset = dataset.train_val_split(training_ids, validation_ids)
         
-        train_and_validate(model, training_dataset, validation_dataset)
+        trained_model, training_evaluator, validation_evaluator \
+            = train_and_validate(model, training_dataset, validation_dataset)
+
+        model_save_path = os.path.join(str(get_weight_dir()), f"trained_model_{i}.state_dict")
+        save_classifier_torch(trained_model, model_save_path)
+        training_evaluator.write_evaluation_results(f"model_training_{i}")
 
     return None
