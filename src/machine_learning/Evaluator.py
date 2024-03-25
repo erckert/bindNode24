@@ -9,15 +9,8 @@ from setup.configProcessor import get_result_dir, get_weight_dir, select_model_t
 
 class BindingResiduePredictionEvaluator:
     def __init__(self):
-        self.per_epoch_performances = {
-            "loss": [],
-            "mcc": [],
-            "precision": [],
-            "recall": [],
-            "f1": [],
-            "accuracy": []
-        }
-        self.final_performances = {
+        self.performances = {
+            "confusion_matrix": [],
             "loss": [],
             "mcc": [],
             "precision": [],
@@ -28,6 +21,12 @@ class BindingResiduePredictionEvaluator:
 
     def evaluate_per_epoch(self, predictions, labels, loss, loss_count):
         tp, fp, tn, fn = self.compute_confusion_matrix_per_epoch(predictions, labels)
+        confusion_matrix = {
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+            "tn": tn,
+        }
         performances = {
             "loss": self.compute_loss(loss, loss_count),
             "mcc": float(self.compute_mcc(tp, fp, tn, fn)),
@@ -36,12 +35,13 @@ class BindingResiduePredictionEvaluator:
             "f1": float(self.compute_f1(tp, fp, fn)),
             "accuracy": float(self.compute_accuracy(tp, fp, tn, fn))
         }
-        self.per_epoch_performances["loss"].append(performances["loss"])
-        self.per_epoch_performances["mcc"].append(performances["mcc"])
-        self.per_epoch_performances["precision"].append(performances["precision"])
-        self.per_epoch_performances["recall"].append(performances["recall"])
-        self.per_epoch_performances["f1"].append(performances["f1"])
-        self.per_epoch_performances["accuracy"].append(performances["accuracy"])
+        self.performances["loss"].append(performances["loss"])
+        self.performances["mcc"].append(performances["mcc"])
+        self.performances["precision"].append(performances["precision"])
+        self.performances["recall"].append(performances["recall"])
+        self.performances["f1"].append(performances["f1"])
+        self.performances["accuracy"].append(performances["accuracy"])
+        self.performances["confusion_matrix"].append(confusion_matrix)
 
     def compute_loss(self, loss, loss_count):
         return loss/loss_count
@@ -104,7 +104,18 @@ class BindingResiduePredictionEvaluator:
             "weight_dir": os.path.relpath(get_weight_dir()),
             "mode": str(select_mode_from_config()),
             "model_parameters": get_model_parameter_dict(True),
-            "optimizer_parameters": get_optimizer_arguments(True)
+            "optimizer_parameters": get_optimizer_arguments(True),
+            "performance": {
+                "all": {
+                    "confusion_matrix": self.performances["confusion_matrix"][-1],
+                    "loss": self.performances["loss"][-1],
+                    "mcc": self.performances["mcc"][-1],
+                    "precision": self.performances["precision"][-1],
+                    "recall": self.performances["recall"][-1],
+                    "f1": self.performances["f1"][-1],
+                    "accuracy": self.performances["accuracy"][-1]
+                }
+            }
         }
         with open(result_path, 'w') as fh:
             json.dump(results, fh)
