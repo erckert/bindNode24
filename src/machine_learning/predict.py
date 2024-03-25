@@ -7,6 +7,7 @@ from output.outputFileWriting import write_predictions_to_file
 from torch_geometric.loader import DataLoader
 import os
 import torch
+import numpy as np
 
 
 def run_prediction():
@@ -37,9 +38,10 @@ def run_prediction():
                 )
                 prediction = sigmoid(prediction)
                 prediction = prediction.detach().cpu()
+                prediction = np.array(prediction)
 
                 if protein_id not in predictions:
                     predictions[protein_id] = [prediction]
                 else:
-                    predictions[protein_id] = predictions[protein_id].append(prediction)
+                    predictions[protein_id] += [prediction]
     write_predictions_to_file(predictions)
