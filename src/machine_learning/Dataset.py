@@ -28,7 +28,7 @@ class BindingResidueDataset(Dataset):
             x=torch.Tensor(self.embeddings[protein_id]),
             edge_index=torch.LongTensor(protein_graph_edges),
         )
-        return protein_graph
+        return protein_graph, protein_id
 
     def get_embedding(self, item):
         protein_id = self.protein_ids[item]
@@ -100,7 +100,7 @@ class BindingResidueDataset(Dataset):
         # Dummy method to add all protein ids to structure dict and create a matrix that represents the backbone
         for protein_id in protein_ids:
             seq_length = len(protein_sequences[protein_id])
-            connectivity_matrices[protein_id] = np.eye(seq_length) + np.eye(seq_length, k=1) + np.eye(seq_length, k=-1)
+            connectivity_matrices[protein_id] = np.eye(seq_length)
 
         # TODO: Fix me!
         return connectivity_matrices
@@ -129,7 +129,7 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
             edge_features=np.array([1] * protein_graph_edges.shape[1]), #TODO: this should be the weights for the second edge index
             y=torch.Tensor(self.labels[protein_id])
         )
-        return protein_graph
+        return protein_graph, protein_id
 
     def collect_subset_data(self, subset_ids, subset):
         super().collect_subset_data(subset_ids, subset)
