@@ -18,7 +18,7 @@ def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
                      prediction_list, label_list, backpropagate=True):
     loss = 0
     loss_count = 0
-    for data_batch in data_loader:
+    for data_batch, _ in data_loader:
         if backpropagate:
             optimizer.zero_grad()
         data_batch = data_batch.to(select_device())
