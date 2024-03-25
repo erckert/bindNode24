@@ -162,8 +162,12 @@ def run_training():
         trained_model, training_evaluator, validation_evaluator \
             = train_and_validate(model, training_dataset, validation_dataset)
 
+        # save model
         model_save_path = os.path.join(str(get_weight_dir()), f"trained_model_{i}.state_dict")
         save_classifier_torch(trained_model, model_save_path)
+
+        # Write training details and final performance to file
         training_evaluator.write_evaluation_results(f"model_training_{i}")
+        validation_evaluator.write_evaluation_results(f"model_validation_{i}")
 
     return None
