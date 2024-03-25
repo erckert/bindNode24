@@ -10,7 +10,7 @@ from colorama import Fore
 import torch.nn.functional as F
 from misc.enums import Mode, ModelType, LabelType
 
-modes = ["optimize-architecture", "best-training", "testing"]
+modes = ["optimize-architecture", "best-training", "predict"]
 RED = "\033[31m"
 config = App.config()
 
