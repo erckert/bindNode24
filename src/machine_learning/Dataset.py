@@ -27,6 +27,8 @@ class BindingResidueDataset(Dataset):
         protein_graph = Data(
             x=torch.Tensor(self.embeddings[protein_id]),
             edge_index=torch.LongTensor(protein_graph_edges),
+            edge_index_cutoff=torch.LongTensor(protein_graph_edges), # TODO: this should be the edges of the distance cutoff
+            edge_features=np.array([1] * protein_graph_edges.shape[1]), # TODO: this should be the weights for the second edge index
         )
         return protein_graph, protein_id
 
