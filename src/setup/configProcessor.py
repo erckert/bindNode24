@@ -157,6 +157,11 @@ def get_label_path(label_type):
             return Path(label_section.get('nuclear_label_file'))
 
 
+def do_logging():
+    logging_section = config["LOGGING"]
+    return logging_section.getboolean("do_logging")
+
+
 def get_weight_dir():
     model_section = config["MODEL"]
     return Path(model_section.get('weight_folder'))
