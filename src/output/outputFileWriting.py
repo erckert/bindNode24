@@ -24,7 +24,7 @@ def write_predictions_to_file(predictions):
                 small_prediction = residue_prediction[1] >= 0.5
                 nuclear_prediction = residue_prediction[2] >= 0.5
                 any_prediction = any([metal_prediction, nuclear_prediction, small_prediction])
-                fh.write(f"{position}\t")
+                fh.write(f"{position + 1}\t")
                 fh.write(f"-\t") # TODO: print RI metal instead
                 fh.write("b\t" if metal_prediction else "nb\t")
                 fh.write(f"-\t")  # TODO: print RI nuclear instead
