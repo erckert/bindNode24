@@ -6,7 +6,6 @@ The implementation of bindNode24 builds on top of bindNode23 [2], a method to pr
 
 - [Usage](#Usage)
 - [Data](#Data)
-- [Development](#Development)
 - [Requirements](#Requirements)
 - [Team](#Team)
 - [License](#License)
@@ -42,6 +41,23 @@ The data set used for training and testing was extracted from BioLip [4]. The Un
 The weights for pretrained models are available in the `pretrained_model_weights` folder.
 
 ProtT5 embeddings can be generated using [the bio_embeddings pipeline](https://github.com/sacdallago/bio_embeddings) [5]. To use them with `bindEmbed21`, they need to be converted to use the correct keys. A script for the conversion can be found in the folder `utils`.
+
+#### Output files
+
+##### Predictions
+The following example shows the output file formatting for predicted proteins:
+```
+Position	Metal.RI	Metal.Class	Nuc.RI	Nuc.Class	Small.RI	Small.Class	Any.Class
+1	9.000	nb	9.000	nb	8.000	nb	nb
+2	9.000	nb	9.000	nb	9.000	nb	nb
+3	9.000	nb	9.000	nb	9.000	nb	nb
+4	9.000	nb	9.000	nb	8.000	nb	nb
+5	9.000	nb	9.000	nb	5.000	nb	nb
+6	9.000	nb	9.000	nb	1.000	nb	nb
+```
+"nb" indicates that the position was predicted as non-binding for the specific binding type and "b", that the position was predicted to be binding. 
+RI indicates the reliability index for the corresponding predictions. Reliability indexes are computed as introduced by Littmann et al [1]. 
+Columns are tab separated for easy further processing.
 
 ### Requirements
 
