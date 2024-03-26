@@ -1,11 +1,13 @@
 import torch
 import os
 from torch_geometric.loader import DataLoader
+from pytorchtools import EarlyStopping
 
 from machine_learning.Dataset import BindingResidueDatasetWithLabels
 from machine_learning.ModelManager import initialize_untrained_model, save_classifier_torch
 from machine_learning.Evaluator import BindingResiduePredictionEvaluator
-from setup.configProcessor import get_cv_splits, get_batch_size, get_optimizer_arguments, get_epochs, get_weight_dir
+from setup.configProcessor import get_cv_splits, get_batch_size, get_optimizer_arguments, get_epochs, get_weight_dir, \
+    is_early_stopping, do_logging
 from setup.generalSetup import select_device
 
 
@@ -108,7 +110,17 @@ def train_and_validate(model, training_dataset, validation_dataset):
     model.to(select_device())
     optimizer = torch.optim.Adam(model.parameters(), **get_optimizer_arguments(only_first_value=True))
 
+    checkpoint_file = "checkpoint_file_early_stopping.pt"
+    early_stopping = EarlyStopping(
+        patience=10, delta=0.01, checkpoint_file=checkpoint_file, verbose=True
+    )
+
+    epoch_counter = 0
     for epoch in range(get_epochs(only_first_value=True)):
+        if do_logging():
+            print("Epoch {}".format(epoch_counter))
+            epoch_counter += 1
+
         torch.cuda.empty_cache()
 
         # training
@@ -141,6 +153,19 @@ def train_and_validate(model, training_dataset, validation_dataset):
             validation_loss,
             validation_loss_count
         )
+
+        if is_early_stopping():
+            f1_validation = validation_evaluator.performances["f1"][-1] * (-1)
+
+            # eval_val = val_loss
+            early_stopping(f1_validation, model, do_logging())
+            if early_stopping.early_stop:
+                break
+
+    if is_early_stopping():
+        # load best model
+        model = torch.load(checkpoint_file)
+
     return model, training_evaluator, validation_evaluator
 
 
