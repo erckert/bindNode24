@@ -43,7 +43,17 @@ class BindingResiduePredictionEvaluator:
         self.performances["accuracy"].append(performances["accuracy"])
         self.performances["confusion_matrix"].append(confusion_matrix)
 
-    def compute_loss(self, loss, loss_count):
+    def remove_last_x_performances(self, x):
+        del self.performances["loss"][-x:]
+        del self.performances["mcc"][-x:]
+        del self.performances["precision"][-x:]
+        del self.performances["recall"][-x:]
+        del self.performances["f1"][-x:]
+        del self.performances["accuracy"][-x:]
+        del self.performances["confusion_matrix"][-x:]
+
+    @staticmethod
+    def compute_loss(loss, loss_count):
         return loss/loss_count
 
     @staticmethod

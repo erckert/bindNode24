@@ -111,8 +111,9 @@ def train_and_validate(model, training_dataset, validation_dataset):
     optimizer = torch.optim.Adam(model.parameters(), **get_optimizer_arguments(only_first_value=True))
 
     checkpoint_file = "checkpoint_file_early_stopping.pt"
+    early_stopping_patience = 10
     early_stopping = EarlyStopping(
-        patience=10, delta=0.01, checkpoint_file=checkpoint_file, verbose=True
+        patience=early_stopping_patience, delta=0.01, checkpoint_file=checkpoint_file, verbose=True
     )
 
     epoch_counter = 0
@@ -160,6 +161,8 @@ def train_and_validate(model, training_dataset, validation_dataset):
             # eval_val = val_loss
             early_stopping(f1_validation, model, do_logging())
             if early_stopping.early_stop:
+                training_evaluator.remove_last_x_performances(x=early_stopping_patience)
+                validation_evaluator.remove_last_x_performances(x=early_stopping_patience)
                 break
 
     if is_early_stopping():
