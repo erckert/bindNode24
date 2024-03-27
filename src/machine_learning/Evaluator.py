@@ -4,7 +4,7 @@ import torch
 import json
 
 from setup.configProcessor import get_result_dir, get_weight_dir, select_model_type_from_config, \
-    select_mode_from_config, get_model_parameter_dict, get_optimizer_arguments
+    select_mode_from_config, get_model_parameter_dict, get_optimizer_arguments, get_cutoff
 
 
 class BindingResiduePredictionEvaluator:
@@ -86,10 +86,10 @@ class BindingResiduePredictionEvaluator:
         tn = 0
         fn = 0
         for prediction_graph, label_graph in zip(predictions, labels):
-            tp += torch.sum(torch.ge(prediction_graph, 0.5) * torch.ge(label_graph, 0.5))
-            tn += torch.sum(torch.lt(prediction_graph, 0.5) * torch.lt(label_graph, 0.5))
-            fp += torch.sum(torch.ge(prediction_graph, 0.5) * torch.lt(label_graph, 0.5))
-            fn += torch.sum(torch.lt(prediction_graph, 0.5) * torch.ge(label_graph, 0.5))
+            tp += torch.sum(torch.ge(prediction_graph, get_cutoff()) * torch.ge(label_graph, get_cutoff()))
+            tn += torch.sum(torch.lt(prediction_graph, get_cutoff()) * torch.lt(label_graph, get_cutoff()))
+            fp += torch.sum(torch.ge(prediction_graph, get_cutoff()) * torch.lt(label_graph, get_cutoff()))
+            fn += torch.sum(torch.lt(prediction_graph, get_cutoff()) * torch.ge(label_graph, get_cutoff()))
 
         tp = float(tp)
         fp = float(fp)
