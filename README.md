@@ -45,7 +45,7 @@ ProtT5 embeddings can be generated using [the bio_embeddings pipeline](https://g
 #### Output files
 
 ##### Predictions
-The following example shows the output file formatting for predicted proteins:
+The following example shows the output file formatting for predicted proteins if `write_ri=true` in the config file:
 ```
 Position	Metal.RI	Metal.Class	Nuc.RI	Nuc.Class	Small.RI	Small.Class	Any.Class
 1	9.000	nb	9.000	nb	8.000	nb	nb
@@ -58,6 +58,21 @@ Position	Metal.RI	Metal.Class	Nuc.RI	Nuc.Class	Small.RI	Small.Class	Any.Class
 "nb" indicates that the position was predicted as non-binding for the specific binding type and "b", that the position was predicted to be binding. 
 RI indicates the reliability index for the corresponding predictions. Reliability indexes are computed as introduced by Littmann et al [1]. 
 Columns are tab separated for easy further processing.
+
+If `write_ri=false` the predictions will contain the predicted probabilities instead of the reliability index:
+```
+Position	Metal.Prob	Metal.Class	Nuc.Prob	Nuc.Class	Small.Prob	Small.Class	Any.Class
+...
+28	0.000	nb	0.000	nb	0.001	nb	nb
+29	0.265	nb	0.001	nb	0.198	nb	nb
+30	0.009	nb	0.010	nb	0.276	nb	nb
+31	0.017	nb	0.006	nb	0.378	nb	nb
+32	0.002	nb	0.003	nb	0.651	b	b
+33	0.024	nb	0.049	nb	0.564	b	b
+34	0.009	nb	0.004	nb	0.166	nb	nb
+...
+```
+Probabilities only show 3 decimal positions.
 
 ### Requirements
 
