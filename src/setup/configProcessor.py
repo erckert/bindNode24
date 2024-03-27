@@ -182,6 +182,16 @@ def get_cutoff():
     return model_section.getfloat('cutoff')
 
 
+def get_output_file_name():
+    output_section = config["OUTPUT"]
+    return output_section.get('output_file_name')
+
+
+def write_ri():
+    output_section = config["OUTPUT"]
+    return output_section.getboolean('write_ri')
+
+
 def get_feature_channels(only_first_value=False):
     training_section = config["MODEL_PARAMETERS"]
     feature_list = [int(item) for item in training_section.get('features').split(',')]
