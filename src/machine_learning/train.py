@@ -1,8 +1,8 @@
 import torch
 import os
 from torch_geometric.loader import DataLoader
-from pytorchtools import EarlyStopping
 
+from machine_learning.EarlyStopping import EarlyStopping
 from machine_learning.Dataset import BindingResidueDatasetWithLabels
 from machine_learning.ModelManager import initialize_untrained_model, save_classifier_torch
 from machine_learning.Evaluator import BindingResiduePredictionEvaluator
