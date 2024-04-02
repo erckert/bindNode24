@@ -1,6 +1,7 @@
 import torch
 import os
 from torch_geometric.loader import DataLoader
+from pathlib import Path
 
 from machine_learning.EarlyStopping import EarlyStopping
 from machine_learning.Dataset import BindingResidueDatasetWithLabels
@@ -29,7 +30,8 @@ def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
             data_batch.x,
             data_batch.edge_index,
             data_batch.edge_index_cutoff,
-            data_batch.edge_features
+            data_batch.edge_features,
+            None # TODO: add DSSP features
         )
         # don't consider padded positions for loss calculation
 
@@ -191,6 +193,8 @@ def run_training():
             = train_and_validate(model, training_dataset, validation_dataset)
 
         # save model
+        if not Path(get_weight_dir()).exists():
+            Path(get_weight_dir()).mkdir(parents=True, exist_ok=True)
         model_save_path = os.path.join(str(get_weight_dir()), f"trained_model_{i}.state_dict")
         save_classifier_torch(trained_model, model_save_path)
 
