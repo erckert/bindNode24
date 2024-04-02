@@ -30,7 +30,6 @@ parts/
 sdist/
 var/
 results/
-data/
 *.egg-info/
 results/
 .installed.cfg
