@@ -30,6 +30,7 @@ parts/
 sdist/
 var/
 results/
+pretrained_model_weights/
 *.egg-info/
 results/
 .installed.cfg
