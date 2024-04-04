@@ -248,7 +248,7 @@ def get_weights(only_first_value=False):
 
 
 def get_embedding_cutoff(only_first_value=False):
-    training_section = config["MODEL_PARAMETERS"]
+    training_section = config["DATASET"]
     embedding_cutoff_list = [int(item) for item in training_section.get('cutoff_embeddings').split(',')]
     if not only_first_value:
         return embedding_cutoff_list
@@ -257,7 +257,7 @@ def get_embedding_cutoff(only_first_value=False):
 
 
 def get_structure_cutoff(only_first_value=False):
-    training_section = config["MODEL_PARAMETERS"]
+    training_section = config["DATASET"]
     structure_cutoff_list = [int(item) for item in training_section.get('cutoff_structure').split(',')]
     if not only_first_value:
         return structure_cutoff_list
