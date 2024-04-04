@@ -33,11 +33,18 @@ class BindingResidueDataset(Dataset):
         protein_id = self.protein_ids[item]
         protein_graph_edges = np.array(self.get_connectivity_matrix(item)["backbone"].nonzero())
         protein_graph_cutoff_edges = np.array(self.get_connectivity_matrix(item)["cutoff"].nonzero())
+
+        edge_attributes = \
+            self.get_connectivity_matrix(item)["distance"][protein_graph_cutoff_edges[0], protein_graph_cutoff_edges[1]]
+        # divide by distance cutoff to avoid div by zero error for linalg.norm
+        edge_attributes = (edge_attributes / self.structure_cutoff)
+        # invert distance to achieve weights: distance zero has highest weight
+        edge_features = (1 - edge_attributes)
         protein_graph = Data(
             x=torch.Tensor(self.embeddings[protein_id]),
             edge_index=torch.LongTensor(protein_graph_edges),
             edge_index_cutoff=torch.LongTensor(protein_graph_cutoff_edges),
-            edge_features=np.array([1] * protein_graph_edges.shape[1]), # TODO: this should be the weights for the second edge index
+            edge_features=edge_features
         )
         return protein_graph, protein_id
 
