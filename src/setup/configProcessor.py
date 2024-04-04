@@ -122,6 +122,11 @@ def get_sequence_path():
     return Path(paths_section.get('fasta_file_path'))
 
 
+def get_3d_structure_dir():
+    paths_section = config["FILE_PATHS"]
+    return Path(paths_section.get('3d_structure_dir'))
+
+
 def get_result_dir():
     paths_section = config["FILE_PATHS"]
     return Path(paths_section.get('result_dir'))

@@ -1,5 +1,10 @@
-from setup.configProcessor import get_id_list_path, get_embeddings_path, get_sequence_path, get_label_path
+import os
+
+from setup.configProcessor import get_id_list_path, get_embeddings_path, get_sequence_path, get_label_path, \
+    get_3d_structure_dir, get_structure_cutoff
 from misc.enums import LabelType
+from Bio.PDB import PDBParser
+from scipy.spatial import distance
 
 import numpy as np
 import h5py
@@ -14,20 +19,21 @@ class BindingResidueDataset(Dataset):
     def __init__(self):
         super().__init__('.', None, None, None)
         self.protein_ids = self.get_id_list()
-        self.embeddings = self.get_embeddings(self.protein_ids)
-        self.sequences = self.get_sequences(self.protein_ids)
-        self.connectivity_matrices = self.get_connectivity(self.protein_ids, self.sequences)
+        self.embeddings = self.get_embeddings()
+        self.sequences = self.get_sequences()
+        self.connectivity_matrices = self.get_connectivity()
 
     def len(self):
         return len(self.protein_ids)
 
     def get(self, item):
         protein_id = self.protein_ids[item]
-        protein_graph_edges = np.array(self.get_connectivity_matrix(item).nonzero())
+        protein_graph_edges = np.array(self.get_connectivity_matrix(item)["backbone"].nonzero())
+        protein_graph_cutoff_edges = np.array(self.get_connectivity_matrix(item)["cutoff"].nonzero())
         protein_graph = Data(
             x=torch.Tensor(self.embeddings[protein_id]),
             edge_index=torch.LongTensor(protein_graph_edges),
-            edge_index_cutoff=torch.LongTensor(protein_graph_edges), # TODO: this should be the edges of the distance cutoff
+            edge_index_cutoff=torch.LongTensor(protein_graph_cutoff_edges),
             edge_features=np.array([1] * protein_graph_edges.shape[1]), # TODO: this should be the weights for the second edge index
         )
         return protein_graph, protein_id
@@ -86,32 +92,59 @@ class BindingResidueDataset(Dataset):
                     id_list.append(protein_id)
         return id_list
 
-    @staticmethod
-    def get_embeddings(protein_ids):
+    def get_embeddings(self):
         embeddings = {}
         embedding_h5 = h5py.File(get_embeddings_path(), 'r')
         for key, value in embedding_h5.items():
-            if key in protein_ids:
+            if key in self.protein_ids:
                 embeddings[key] = np.array(value[:, :], dtype=np.float32)
         return embeddings
 
-    @staticmethod
-    def get_connectivity(protein_ids, protein_sequences):
+    def get_connectivity(self):
         connectivity_matrices = {}
+        cutoff = get_structure_cutoff(only_first_value=True)
 
         # Dummy method to add all protein ids to structure dict and create a matrix that represents the backbone
-        for protein_id in protein_ids:
-            seq_length = len(protein_sequences[protein_id])
-            connectivity_matrices[protein_id] = np.eye(seq_length)
+        for protein_id in self.protein_ids:
+            seq_length = len(self.sequences[protein_id])
+            distance_matrix = self.generate_distance_matrix(protein_id)
+            connectivity_matrices[protein_id] = \
+                {
+                    "backbone": np.eye(seq_length),
+                    "distance": distance_matrix,
+                    "cutoff": (distance_matrix < cutoff).astype(int)
+                }
 
-        # TODO: Fix me!
         return connectivity_matrices
 
     @staticmethod
-    def get_sequences(protein_ids):
+    def generate_distance_matrix(protein_id):
+        structure_dir = get_3d_structure_dir()
+        files = os.listdir(structure_dir)
+
+        pdb_parser = PDBParser()
+        pdb_file = f"{protein_id}.pdb"
+
+        coordinates = []
+        if pdb_file in files:
+            structure = pdb_parser.get_structure(protein_id, os.path.join(structure_dir, pdb_file))
+            residues = structure.get_residues()
+            for residue in residues:
+                c_alpha_coordinates = residue["CA"].coord
+                coordinates.append(c_alpha_coordinates)
+
+        distance_matrix = np.zeros((len(coordinates), len(coordinates)))
+        for i, first_coordinate in enumerate(coordinates):
+            for j, second_coordinate in enumerate(coordinates):
+                pairwise_distance = distance.euclidean(first_coordinate, second_coordinate)
+                distance_matrix[i, j] = pairwise_distance
+
+        return distance_matrix
+
+    def get_sequences(self):
         protein_sequences = {}
         for record in fastapy.parse(get_sequence_path()):
-            if record.id in protein_ids:
+            if record.id in self.protein_ids:
                 protein_sequences[record.id] = record.seq
         return protein_sequences
 
@@ -123,7 +156,7 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
 
     def get(self, item):
         protein_id = self.protein_ids[item]
-        protein_graph_edges = np.array(self.get_connectivity_matrix(item).nonzero())
+        protein_graph_edges = np.array(self.get_connectivity_matrix(item)["backbone"].nonzero())
         protein_graph = Data(
             x=torch.Tensor(self.get_embedding(item)),
             edge_index=torch.LongTensor(protein_graph_edges),
