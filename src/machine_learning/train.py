@@ -8,7 +8,7 @@ from machine_learning.Dataset import BindingResidueDatasetWithLabels
 from machine_learning.ModelManager import initialize_untrained_model, save_classifier_torch
 from machine_learning.Evaluator import BindingResiduePredictionEvaluator
 from setup.configProcessor import get_cv_splits, get_batch_size, get_optimizer_arguments, get_epochs, get_weight_dir, \
-    is_early_stopping, do_logging
+    is_early_stopping, do_logging, get_structure_cutoff
 from setup.generalSetup import select_device
 
 
@@ -175,7 +175,8 @@ def train_and_validate(model, training_dataset, validation_dataset):
 
 
 def run_training():
-    dataset = BindingResidueDatasetWithLabels()
+    structure_cutoff = get_structure_cutoff(only_first_value=True)
+    dataset = BindingResidueDatasetWithLabels(structure_cutoff)
     cv_split_ids = get_cv_splits()
     nr_of_splits = len(cv_split_ids)
 

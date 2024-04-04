@@ -1,9 +1,10 @@
 import os
 
 from setup.configProcessor import get_id_list_path, get_embeddings_path, get_sequence_path, get_label_path, \
-    get_3d_structure_dir, get_structure_cutoff
+    get_3d_structure_dir
 from misc.enums import LabelType
 from Bio.PDB import PDBParser
+from Bio.PDB.DSSP import DSSP
 from scipy.spatial import distance
 
 import numpy as np
@@ -16,12 +17,14 @@ from torch_geometric.data import Dataset, Data
 
 
 class BindingResidueDataset(Dataset):
-    def __init__(self):
+    def __init__(self, structure_cutoff):
         super().__init__('.', None, None, None)
+        self.structure_cutoff = structure_cutoff
         self.protein_ids = self.get_id_list()
         self.embeddings = self.get_embeddings()
         self.sequences = self.get_sequences()
         self.connectivity_matrices = self.get_connectivity()
+        self.dssp_features = self.get_dssp_features()
 
     def len(self):
         return len(self.protein_ids)
@@ -102,7 +105,7 @@ class BindingResidueDataset(Dataset):
 
     def get_connectivity(self):
         connectivity_matrices = {}
-        cutoff = get_structure_cutoff(only_first_value=True)
+        cutoff = self.structure_cutoff
 
         # Dummy method to add all protein ids to structure dict and create a matrix that represents the backbone
         for protein_id in self.protein_ids:
@@ -141,6 +144,22 @@ class BindingResidueDataset(Dataset):
 
         return distance_matrix
 
+    def get_dssp_features(self):
+        pdb_parser = PDBParser()
+        dssp_features = {}
+        structure_dir = get_3d_structure_dir()
+        files = os.listdir(structure_dir)
+
+        for protein_id in self.protein_ids:
+            pdb_file = f"{protein_id}.pdb"
+            if pdb_file in files:
+                structure = pdb_parser.get_structure(protein_id, os.path.join(structure_dir, pdb_file))
+                model = structure[0]
+                # TODO: fix me!
+                # dssp = DSSP(model, os.path.join(structure_dir, pdb_file), dssp='mkdssp')
+                # print(dssp)
+        return dssp_features
+
     def get_sequences(self):
         protein_sequences = {}
         for record in fastapy.parse(get_sequence_path()):
@@ -150,8 +169,8 @@ class BindingResidueDataset(Dataset):
 
 
 class BindingResidueDatasetWithLabels(BindingResidueDataset):
-    def __init__(self):
-        super(BindingResidueDatasetWithLabels, self).__init__()
+    def __init__(self, structure_cutoff):
+        super(BindingResidueDatasetWithLabels, self).__init__(structure_cutoff)
         self.labels = self.get_labels(self.sequences)
 
     def get(self, item):

@@ -1,6 +1,6 @@
 from machine_learning.Dataset import BindingResidueDataset
 from machine_learning.ModelManager import load_classifier_torch
-from setup.configProcessor import get_weight_dir
+from setup.configProcessor import get_weight_dir, get_structure_cutoff
 from setup.generalSetup import select_device
 from output.outputFileWriting import write_predictions_to_file
 
@@ -11,7 +11,8 @@ import numpy as np
 
 
 def run_prediction():
-    dataset = BindingResidueDataset()
+    structure_cutoff = get_structure_cutoff(only_first_value=True)
+    dataset = BindingResidueDataset(structure_cutoff)
     predictions = {}
 
     sigmoid = torch.nn.Sigmoid()
