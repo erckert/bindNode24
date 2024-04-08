@@ -96,10 +96,24 @@ class BindingResiduePredictionEvaluator:
         tn = 0
         fn = 0
         for prediction_graph, label_graph in zip(predictions, labels):
-            tp += torch.sum(torch.ge(prediction_graph, get_cutoff()) * torch.ge(label_graph, get_cutoff()))
-            tn += torch.sum(torch.lt(prediction_graph, get_cutoff()) * torch.lt(label_graph, get_cutoff()))
-            fp += torch.sum(torch.ge(prediction_graph, get_cutoff()) * torch.lt(label_graph, get_cutoff()))
-            fn += torch.sum(torch.lt(prediction_graph, get_cutoff()) * torch.ge(label_graph, get_cutoff()))
+            # if ANY value in a per-residue vector of length 3 is above the cutoff, the position is considered as
+            # binding. Only if ALL values in the vector are below, it is considered non-binding
+            tp += torch.sum(
+                torch.any(torch.ge(prediction_graph, get_cutoff()), 1) *
+                torch.any(torch.ge(label_graph, get_cutoff()), 1)
+            )
+            tn += torch.sum(
+                torch.all(torch.lt(prediction_graph, get_cutoff()), 1) *
+                torch.all(torch.lt(label_graph, get_cutoff()), 1)
+            )
+            fp += torch.sum(
+                torch.any(torch.ge(prediction_graph, get_cutoff()), 1) *
+                torch.all(torch.lt(label_graph, get_cutoff()), 1)
+            )
+            fn += torch.sum(
+                torch.all(torch.lt(prediction_graph, get_cutoff()), 1) *
+                torch.any(torch.ge(label_graph, get_cutoff()), 1)
+            )
 
         tp = float(tp)
         fp = float(fp)
