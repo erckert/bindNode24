@@ -10,7 +10,7 @@ from colorama import Fore
 import torch.nn.functional as F
 from misc.enums import Mode, ModelType, LabelType
 
-modes = ["optimize-architecture", "best-training", "predict"]
+modes = ["optimize-architecture", "training", "predict"]
 RED = "\033[31m"
 config = App.config()
 
@@ -30,7 +30,7 @@ def select_mode_from_config():
     match mode:
         case "predict":
             return Mode.PREDICT
-        case "best-training":
+        case "training":
             return Mode.TRAIN
         case "optimize-architecture":
             return Mode.OPTIMIZE
