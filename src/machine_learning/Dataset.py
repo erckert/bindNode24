@@ -34,6 +34,7 @@ class BindingResidueDataset(Dataset):
         protein_graph_edges = np.array(self.get_connectivity_matrix(item)["backbone"].nonzero())
         protein_graph_cutoff_edges = np.array(self.get_connectivity_matrix(item)["cutoff"].nonzero())
 
+        # retrieve distances of edges below structure cutoff
         edge_attributes = \
             self.get_connectivity_matrix(item)["distance"][protein_graph_cutoff_edges[0], protein_graph_cutoff_edges[1]]
         # divide by distance cutoff to avoid div by zero error for linalg.norm
@@ -114,7 +115,8 @@ class BindingResidueDataset(Dataset):
         connectivity_matrices = {}
         cutoff = self.structure_cutoff
 
-        # Dummy method to add all protein ids to structure dict and create a matrix that represents the backbone
+        # add all protein ids to structure dict, create a matrix that represents the backbone, one for the actual
+        # distances and ond for the cutoffs
         for protein_id in self.protein_ids:
             seq_length = len(self.sequences[protein_id])
             distance_matrix = self.generate_distance_matrix(protein_id)
@@ -183,13 +185,23 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
     def get(self, item):
         protein_id = self.protein_ids[item]
         protein_graph_edges = np.array(self.get_connectivity_matrix(item)["backbone"].nonzero())
+        protein_graph_cutoff_edges = np.array(self.get_connectivity_matrix(item)["cutoff"].nonzero())
+
+        edge_attributes = \
+            self.get_connectivity_matrix(item)["distance"][protein_graph_cutoff_edges[0], protein_graph_cutoff_edges[1]]
+        # divide by distance cutoff to avoid div by zero error for linalg.norm
+        edge_attributes = (edge_attributes / self.structure_cutoff)
+        # invert distance to achieve weights: distance zero has highest weight
+        edge_features = (1 - edge_attributes)
+
         protein_graph = Data(
             x=torch.Tensor(self.get_embedding(item)),
             edge_index=torch.LongTensor(protein_graph_edges),
-            edge_index_cutoff=torch.LongTensor(protein_graph_edges), #TODO: this should be the edges of the distance cutoff
-            edge_features=np.array([1] * protein_graph_edges.shape[1]), #TODO: this should be the weights for the second edge index
+            edge_index_cutoff=torch.LongTensor(protein_graph_cutoff_edges),
+            edge_features=edge_features,
             y=torch.Tensor(self.labels[protein_id])
         )
+
         return protein_graph, protein_id
 
     def collect_subset_data(self, subset_ids, subset):
