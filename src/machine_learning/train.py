@@ -33,10 +33,9 @@ def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
             data_batch.edge_features,
             None # TODO: add DSSP features
         )
-        # don't consider padded positions for loss calculation
 
         loss_el = loss_function(predictions, data_batch.y)
-        # pred is a tensor of shape: 69203, 3 num_nodes, data_graph.batch is tensor 69k, 2
+        # predictions is a tensor of shape: 69203, 3 num_nodes, data_graph.batch is tensor 69k, 2
 
         loss_norm = torch.sum(loss_el)
         loss += loss_norm.item()
@@ -158,7 +157,7 @@ def train_and_validate(model, training_dataset, validation_dataset):
         )
 
         if is_early_stopping():
-            f1_validation = validation_evaluator.performances["f1"][-1] * (-1)
+            f1_validation = validation_evaluator.performances["all"]["f1"][-1] * (-1)
 
             # eval_val = val_loss
             early_stopping(f1_validation, model, do_logging())
