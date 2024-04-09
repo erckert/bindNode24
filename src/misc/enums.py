@@ -15,6 +15,6 @@ class ModelType(Enum):
 
 
 class LabelType(Enum):
-    METAL = auto()
-    SMALL = auto()
-    NUCLEAR = auto()
+    METAL = 0
+    SMALL = 2
+    NUCLEAR = 1
