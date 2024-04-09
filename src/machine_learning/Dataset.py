@@ -224,13 +224,13 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
             label_array = np.zeros((length, 3))
             if protein_id in metal_labels:
                 for metal_label in metal_labels[protein_id]:
-                    label_array[metal_label, 0] = 1
+                    label_array[metal_label, LabelType.METAL.value] = 1
             if protein_id in small_labels:
                 for small_label in small_labels[protein_id]:
-                    label_array[small_label, 1] = 1
+                    label_array[small_label, LabelType.SMALL.value] = 1
             if protein_id in nuclear_labels:
                 for nuclear_label in nuclear_labels[protein_id]:
-                    label_array[nuclear_label, 2] = 1
+                    label_array[nuclear_label, LabelType.NUCLEAR.value] = 1
             labels[protein_id] = label_array
 
         return labels
