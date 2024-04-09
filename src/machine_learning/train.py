@@ -106,7 +106,10 @@ def train_and_validate(model, training_dataset, validation_dataset):
     training_evaluator = BindingResiduePredictionEvaluator()
     validation_evaluator = BindingResiduePredictionEvaluator()
 
-    loss_function = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=get_weights(only_first_value=True))
+    loss_function = torch.nn.BCEWithLogitsLoss(
+        reduction="none",
+        pos_weight=torch.tensor(get_weights(only_first_value=True))
+    )
     sigmoid = torch.nn.Sigmoid()
     model.to(select_device())
     optimizer = torch.optim.Adam(model.parameters(), **get_optimizer_arguments(only_first_value=True))
