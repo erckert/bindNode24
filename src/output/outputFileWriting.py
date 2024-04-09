@@ -34,11 +34,21 @@ def write_predictions_to_file(predictions):
                 nuclear_prediction = nuclear_probability >= get_cutoff()
 
                 any_prediction = any([metal_prediction, nuclear_prediction, small_prediction])
+
                 fh.write(f"{position + 1}\t")
-                fh.write(f"-\t" if is_write_ri else f"{metal_probability:.3f}\t")  # TODO: print RI metal instead
+                fh.write(f"{compute_ri(metal_probability):.3f}\t" if is_write_ri else f"{metal_probability:.3f}\t")
                 fh.write("b\t" if metal_prediction else "nb\t")
-                fh.write(f"-\t" if is_write_ri else f"{nuclear_probability:.3f}\t")  # TODO: print RI nuclear instead
+                fh.write(f"{compute_ri(nuclear_probability):.3f}\t" if is_write_ri else f"{nuclear_probability:.3f}\t")
                 fh.write("b\t" if nuclear_prediction else "nb\t")
-                fh.write(f"-\t" if is_write_ri else f"{small_probability:.3f}\t")  # TODO: print RI small instead
+                fh.write(f"{compute_ri(small_probability):.3f}\t" if is_write_ri else f"{small_probability:.3f}\t")
                 fh.write("b\t" if small_prediction else "nb\t")
                 fh.write("b\n" if any_prediction else "nb\n")
+
+
+def compute_ri(prediction_probability):
+    if prediction_probability < 0.5:
+        reliability_index = round((0.5 - prediction_probability) * 9 / 0.5)
+    else:
+        reliability_index = round((prediction_probability - 0.5) * 9 / 0.5)
+
+    return reliability_index
