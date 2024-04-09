@@ -239,7 +239,7 @@ def is_early_stopping():
 
 
 def get_weights(only_first_value=False):
-    training_section = config["MODEL_PARAMETERS"]
+    training_section = config["LOSS_FUNCTION_PARAMETERS"]
     weights_list = [[float(weight) for weight in item.split(',')] for item in re.findall(r'\[(.*?)\]', training_section.get('weights'))]
     if not only_first_value:
         return weights_list

@@ -8,7 +8,7 @@ from machine_learning.Dataset import BindingResidueDatasetWithLabels
 from machine_learning.ModelManager import initialize_untrained_model, save_classifier_torch
 from machine_learning.Evaluator import BindingResiduePredictionEvaluator
 from setup.configProcessor import get_cv_splits, get_batch_size, get_optimizer_arguments, get_epochs, get_weight_dir, \
-    is_early_stopping, do_logging, get_structure_cutoff
+    is_early_stopping, do_logging, get_structure_cutoff, get_weights
 from setup.generalSetup import select_device
 
 
@@ -106,7 +106,7 @@ def train_and_validate(model, training_dataset, validation_dataset):
     training_evaluator = BindingResiduePredictionEvaluator()
     validation_evaluator = BindingResiduePredictionEvaluator()
 
-    loss_function = torch.nn.BCEWithLogitsLoss(reduction="none")
+    loss_function = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=get_weights())
     sigmoid = torch.nn.Sigmoid()
     model.to(select_device())
     optimizer = torch.optim.Adam(model.parameters(), **get_optimizer_arguments(only_first_value=True))
