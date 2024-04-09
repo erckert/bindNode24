@@ -3,6 +3,7 @@ import colorama
 import pathvalidate
 import os
 import re
+import torch
 
 from pathlib import Path
 from config import App
@@ -240,20 +241,11 @@ def is_early_stopping():
 
 def get_weights(only_first_value=False):
     training_section = config["LOSS_FUNCTION_PARAMETERS"]
-    weights_list = [[float(weight) for weight in item.split(',')] for item in re.findall(r'\[(.*?)\]', training_section.get('weights'))]
+    weights_list = [torch.tensor([float(weight) for weight in item.split(',')]) for item in re.findall(r'\[(.*?)\]', training_section.get('weights'))]
     if not only_first_value:
         return weights_list
     else:
         return weights_list[0]
-
-
-def get_embedding_cutoff(only_first_value=False):
-    training_section = config["DATASET"]
-    embedding_cutoff_list = [int(item) for item in training_section.get('cutoff_embeddings').split(',')]
-    if not only_first_value:
-        return embedding_cutoff_list
-    else:
-        return embedding_cutoff_list[0]
 
 
 def get_structure_cutoff(only_first_value=False):
@@ -317,7 +309,6 @@ def get_model_parameter_dict(only_first_value=False):
         "epochs": get_epochs(only_first_value),
         "early_stopping": is_early_stopping(),
         "weights": get_weights(only_first_value),
-        "cutoff_embeddings": get_embedding_cutoff(only_first_value),
         "cutoff_structure": get_structure_cutoff(only_first_value),
         "activation": get_activation_as_string(),
         "batchsize": get_batch_size(only_first_value),
