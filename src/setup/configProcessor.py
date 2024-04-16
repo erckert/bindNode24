@@ -132,6 +132,11 @@ def get_result_dir():
     return Path(paths_section.get('result_dir'))
 
 
+def get_cache_dir():
+    paths_section = config["FILE_PATHS"]
+    return Path(paths_section.get('cache_folder'))
+
+
 def get_cv_splits():
     cv_split_ids = []
     paths_section = config["FILE_PATHS"]
@@ -163,8 +168,13 @@ def get_label_path(label_type):
 
 
 def do_logging():
-    logging_section = config["LOGGING"]
-    return logging_section.getboolean("do_logging")
+    utility_section = config["UTILITY"]
+    return utility_section.getboolean("do_logging")
+
+
+def use_cache():
+    utility_section = config["UTILITY"]
+    return utility_section.getboolean("use_cache")
 
 
 def get_weight_dir():

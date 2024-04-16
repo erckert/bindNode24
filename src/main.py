@@ -1,8 +1,9 @@
 from misc.enums import Mode
+from misc.Cache import setup_chache
 from machine_learning.predict import run_prediction
 from machine_learning.train import run_optimization, run_training
 
-from setup.configProcessor import validate_config, select_mode_from_config
+from setup.configProcessor import validate_config, select_mode_from_config, use_cache
 from setup.generalSetup import seed_all
 
 if __name__ == "__main__":
@@ -11,6 +12,8 @@ if __name__ == "__main__":
     validate_config()
     mode = select_mode_from_config()
     print(f'Selected mode is {mode.name}')
+    if use_cache():
+        setup_chache()
     match mode:
         case Mode.PREDICT:
             run_prediction()

@@ -33,6 +33,7 @@ results/
 pretrained_model_weights/
 *.egg-info/
 results/
+cache/
 .installed.cfg
 *.egg
 

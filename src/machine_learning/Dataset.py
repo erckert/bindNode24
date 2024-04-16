@@ -1,7 +1,8 @@
 import os
 
 from setup.configProcessor import get_id_list_path, get_embeddings_path, get_sequence_path, get_label_path, \
-    get_3d_structure_dir
+    get_3d_structure_dir, use_cache
+from misc.Cache import load_distance_matrix, cache_distance_matrix
 from misc.enums import LabelType
 from Bio.PDB import PDBParser
 from Bio.PDB.DSSP import DSSP
@@ -119,7 +120,11 @@ class BindingResidueDataset(Dataset):
         # distances and ond for the cutoffs
         for protein_id in self.protein_ids:
             seq_length = len(self.sequences[protein_id])
-            distance_matrix = self.generate_distance_matrix(protein_id)
+            distance_matrix = None
+            if use_cache():
+                distance_matrix = load_distance_matrix(protein_id)
+            if distance_matrix is None:
+                distance_matrix = self.generate_distance_matrix(protein_id)
             connectivity_matrices[protein_id] = \
                 {
                     "backbone": np.eye(seq_length),
@@ -150,6 +155,8 @@ class BindingResidueDataset(Dataset):
             for j, second_coordinate in enumerate(coordinates):
                 pairwise_distance = distance.euclidean(first_coordinate, second_coordinate)
                 distance_matrix[i, j] = pairwise_distance
+        if use_cache():
+            cache_distance_matrix(protein_id, distance_matrix)
 
         return distance_matrix
 
