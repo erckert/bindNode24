@@ -90,7 +90,7 @@ Technical University of Munich - Rostlab
 
 | Kyra Erckert | Franz Birkeneder | Burkhard Rost |
 |:------------:|:-------------:|:-------------:|
-|<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/erckert.jpg"> |<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/birkeneder.jpg">|<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/rost.jpg">|
+|<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/erckert.jpg"> |<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/birkeneder.jpg">|<img width=120/ src="https://github.com/erckert/bindNode24/raw/main/images/rost.png">|
 
 
 ### License

@@ -12,7 +12,6 @@ wandb/
 *.h5
 *.npy
 *.pt
-*.png
 *.bindPredict_out
 
 # Distribution / packaging
@@ -120,3 +119,7 @@ prot_t5_xl_uniref50/prottrans_t5_xl_u50/half_precision_model_directory/pytorch_m
 prot_t5_xl_uniref50/prottrans_t5_xl_u50/half_precision_model_directory/spiece.model
 sandbox/cleanup.py
 cross_validation_results.txt
+plots/compare_embeds.png
+plots/PLOT_TEST_Results.png
+plots/Q8TL28_old.png
+plots/compare_models.png
