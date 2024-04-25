@@ -1,6 +1,7 @@
 import os
 
 from setup.configProcessor import get_result_dir, write_ri, get_cutoff
+from misc.enums import LabelType
 
 
 def write_predictions_to_file(predictions):
@@ -25,9 +26,9 @@ def write_predictions_to_file(predictions):
             else:
                 fh.write("Position\tMetal.Prob\tMetal.Class\tNuc.Prob\tNuc.Class\tSmall.Prob\tSmall.Class\tAny.Class\n")
             for position, residue_prediction in enumerate(prediction):
-                metal_probability = residue_prediction[0]
-                small_probability = residue_prediction[1]
-                nuclear_probability = residue_prediction[2]
+                metal_probability = residue_prediction[LabelType.METAL.value]
+                small_probability = residue_prediction[LabelType.SMALL.value]
+                nuclear_probability = residue_prediction[LabelType.NUCLEAR.value]
 
                 metal_prediction = metal_probability >= get_cutoff()
                 small_prediction = small_probability >= get_cutoff()
