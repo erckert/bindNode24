@@ -17,10 +17,10 @@ class GCNConvModel(torch.nn.Module):
         """Second pair of edge tensor allows different shells of neighbors to be evaluated.
         Not utilized in this model, but data pipeline must work for all models."""
         edge_features = None
-        x = self.gcn1(features, edges, edge_features)
+        x = self.gcn1(features, edges2, edge_features)
         x = F.relu(x)
         x = F.dropout(x, self.dropout, training=self.training)
-        return self.gcn2(x, edges, edge_features)
+        return self.gcn2(x, edges2, edge_features)
 
 
 class SAGEConvModel(torch.nn.Module):
@@ -35,10 +35,10 @@ class SAGEConvModel(torch.nn.Module):
         self.activation = activation
 
     def forward(self, features, edges, edges2, edge_features, additional_feature):
-        x = self.sage1(features, edges)
+        x = self.sage1(features, edges2)
         x = self.activation(x)
         x = F.dropout(x, self.dropout, training=self.training)
-        return self.sage2(x, edges)
+        return self.sage2(x, edges2)
 
 
 class SAGEConvMLPModel(torch.nn.Module):
@@ -62,7 +62,7 @@ class SAGEConvMLPModel(torch.nn.Module):
         self.activation = activation
 
     def forward(self, features, edges, edges2, edge_features, additional_feature):
-        x = self.sage1(features, edges)
+        x = self.sage1(features, edges2)
         x = self.activation(x)
         x = F.dropout(x, self.dropout, training=self.training)
 
