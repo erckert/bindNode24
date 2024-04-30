@@ -32,6 +32,8 @@ python src/main.py -f FILEPATH
 ```
 instead.
 
+Warning: If PDB structures or DSSP files are unavailable, the corresponding entries in the dataset will be replaced with 0. A notification will be printed in the command line. Predictions generated in this way may be very unreliable. 
+
 ### Data
 
 #### Development

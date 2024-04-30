@@ -149,17 +149,18 @@ class BindingResidueDataset(Dataset):
             structure = pdb_parser.get_structure(protein_id, os.path.join(structure_dir, pdb_file))
             residues = structure.get_residues()
             for residue in residues:
-                # TODO: What about models that miss individual residues?
                 c_alpha_coordinates = residue["CA"].coord
-                coordinates.append(c_alpha_coordinates)
+                # models may have missing residues so we need to keep track of which position the coordinates belong to
+                residue_position = residue.id[1]
+                coordinates.append((residue_position, c_alpha_coordinates))
 
         else:
             print(f"No structure available for {protein_id}")
             # if this is the case, the distance matrix will only consist of zeros
 
         distance_matrix = np.zeros((len(coordinates), len(coordinates)))
-        for i, first_coordinate in enumerate(coordinates):
-            for j, second_coordinate in enumerate(coordinates):
+        for i, first_coordinate in coordinates:
+            for j, second_coordinate in coordinates:
                 pairwise_distance = distance.euclidean(first_coordinate, second_coordinate)
                 distance_matrix[i, j] = pairwise_distance
         if use_cache():
