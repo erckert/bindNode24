@@ -31,7 +31,7 @@ def make_predictions(model, data_loader, optimizer, loss_function, sigmoid,
             data_batch.edge_index,
             data_batch.edge_index_cutoff,
             data_batch.edge_features,
-            None # TODO: add DSSP features
+            data_batch.dssp_features
         )
 
         loss_el = loss_function(predictions, data_batch.y)

@@ -127,6 +127,11 @@ def get_3d_structure_dir():
     return Path(paths_section.get('3d_structure_dir'))
 
 
+def get_DSSP_dir():
+    paths_section = config["FILE_PATHS"]
+    return Path(paths_section.get('precomputed_DSSP_feature_dir'))
+
+
 def get_result_dir():
     paths_section = config["FILE_PATHS"]
     return Path(paths_section.get('result_dir'))

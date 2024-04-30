@@ -36,7 +36,7 @@ def run_prediction():
                     protein_graph.edge_index,
                     protein_graph.edge_index_cutoff,
                     protein_graph.edge_features,
-                    None  # TODO: add DSSP features
+                    protein_graph.dssp_features
                 )
                 prediction = sigmoid(prediction)
                 prediction = prediction.detach().cpu()

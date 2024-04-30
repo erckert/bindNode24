@@ -18,3 +18,15 @@ class LabelType(Enum):
     METAL = 0
     NUCLEAR = 1
     SMALL = 2
+
+
+class DSSPStructure(Enum):
+    HELIXALPHA = 0
+    BETABRIDGE = 1
+    EXTENDEDSRTRAND = 2
+    HELIX3_10= 3
+    HELIXPI = 4
+    HELIXK = 5
+    TURN = 6
+    BEND = 7
+
