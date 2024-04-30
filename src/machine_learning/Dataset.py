@@ -47,8 +47,8 @@ class BindingResidueDataset(Dataset):
             x=torch.Tensor(self.embeddings[protein_id]),
             edge_index=torch.LongTensor(protein_graph_edges),
             edge_index_cutoff=torch.LongTensor(protein_graph_cutoff_edges),
-            edge_features=edge_features,
-            dssp_features=torch.tensor(self.dssp_features[protein_id])
+            edge_features=torch.Tensor(edge_features),
+            dssp_features=torch.tensor(self.dssp_features[protein_id]).float()
         )
         return protein_graph, protein_id
 
@@ -136,9 +136,9 @@ class BindingResidueDataset(Dataset):
 
         return connectivity_matrices
 
-    @staticmethod
-    def generate_distance_matrix(protein_id):
+    def generate_distance_matrix(self, protein_id):
         structure_dir = get_3d_structure_dir()
+        protein_length = len(self.sequences[protein_id])
         files = os.listdir(structure_dir)
 
         pdb_parser = PDBParser()
@@ -150,15 +150,16 @@ class BindingResidueDataset(Dataset):
             residues = structure.get_residues()
             for residue in residues:
                 c_alpha_coordinates = residue["CA"].coord
-                # models may have missing residues so we need to keep track of which position the coordinates belong to
-                residue_position = residue.id[1]
+                # models may have missing residues, so we need to keep track of which position the coordinates belong to
+                # index needs to be shifted by one (PDB files are 1-based indexed)
+                residue_position = residue.id[1]-1
                 coordinates.append((residue_position, c_alpha_coordinates))
 
         else:
             print(f"No structure available for {protein_id}")
             # if this is the case, the distance matrix will only consist of zeros
 
-        distance_matrix = np.zeros((len(coordinates), len(coordinates)))
+        distance_matrix = np.zeros((protein_length, protein_length))
         for i, first_coordinate in coordinates:
             for j, second_coordinate in coordinates:
                 pairwise_distance = distance.euclidean(first_coordinate, second_coordinate)
@@ -313,9 +314,9 @@ class BindingResidueDatasetWithLabels(BindingResidueDataset):
             x=torch.Tensor(self.get_embedding(item)),
             edge_index=torch.LongTensor(protein_graph_edges),
             edge_index_cutoff=torch.LongTensor(protein_graph_cutoff_edges),
-            edge_features=edge_features,
+            edge_features=torch.Tensor(edge_features),
             y=torch.Tensor(self.labels[protein_id]),
-            dssp_features=torch.tensor(self.dssp_features[protein_id])
+            dssp_features=torch.tensor(self.dssp_features[protein_id]).float()
         )
 
         return protein_graph, protein_id
