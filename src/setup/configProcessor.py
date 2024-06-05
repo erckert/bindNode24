@@ -192,6 +192,16 @@ def get_in_channels():
     return model_section.getint('in_channels')
 
 
+def get_additional_channels():
+    model_section = config["MODEL"]
+    return model_section.getint('nr_additional_features')
+
+
+def use_dssp():
+    model_section = config["MODEL"]
+    return model_section.getboolean('use_dssp')
+
+
 def get_out_channels():
     model_section = config["MODEL"]
     return model_section.getint('out_channels')
@@ -326,7 +336,9 @@ def get_model_parameter_dict(only_first_value=False):
         "cutoff_structure": get_structure_cutoff(only_first_value),
         "activation": get_activation_as_string(),
         "batchsize": get_batch_size(only_first_value),
-        "droupout_fcn": get_dropouts_fcn(only_first_value)
+        "droupout_fcn": get_dropouts_fcn(only_first_value),
+        "use_dssp": use_dssp(),
+        "nr_dssp_features": get_additional_channels()
     }
     return model_parameter_dict
 
