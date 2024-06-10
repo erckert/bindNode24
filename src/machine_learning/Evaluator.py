@@ -2,10 +2,24 @@ import math
 import os
 import torch
 import json
+import numpy as np
+from scipy.stats import t
 
 from setup.configProcessor import get_result_dir, get_weight_dir, select_model_type_from_config, \
     select_mode_from_config, get_model_parameter_dict, get_optimizer_arguments, get_cutoff
 from misc.enums import LabelType
+
+
+def average(performance_list: list):
+    return sum(performance_list)/len(performance_list)
+
+
+def sum_confusion_matrices(confusion_matrix_list: list):
+    tp = sum([confusion_matrix['tp'] for confusion_matrix in confusion_matrix_list])
+    fp = sum([confusion_matrix['fp'] for confusion_matrix in confusion_matrix_list])
+    fn = sum([confusion_matrix['fn'] for confusion_matrix in confusion_matrix_list])
+    tn = sum([confusion_matrix['tn'] for confusion_matrix in confusion_matrix_list])
+    return {"tp": tp, "fp": fp, "fn": fn, "tn": tn}
 
 
 class BindingResiduePredictionEvaluator:
@@ -62,6 +76,7 @@ class BindingResiduePredictionEvaluator:
             "f1": float(self.compute_f1(tp, fp, fn)),
             "accuracy": float(self.compute_accuracy(tp, fp, tn, fn))
         }
+
         self.performances["all"]["loss"].append(performances["loss"])
         self.performances["all"]["mcc"].append(performances["mcc"])
         self.performances["all"]["precision"].append(performances["precision"])
@@ -73,6 +88,10 @@ class BindingResiduePredictionEvaluator:
         self.compute_per_class_performances(predictions, labels, LabelType.METAL)
         self.compute_per_class_performances(predictions, labels, LabelType.SMALL)
         self.compute_per_class_performances(predictions, labels, LabelType.NUCLEAR)
+
+    def evaluate_per_protein(self, predictions, labels, loss, loss_count):
+        for prediction, label in zip(predictions, labels):
+            self.evaluate_per_epoch(prediction, label, loss, loss_count)
 
     def remove_last_x_performances_by_result_section(self, x, result_section):
         if result_section == "all":
@@ -127,6 +146,24 @@ class BindingResiduePredictionEvaluator:
     @staticmethod
     def compute_accuracy(tp, fp, tn, fn):
         return (tp + tn) / (tp + tn + fn + fp)
+
+    @staticmethod
+    def compute_covOneBind(per_protein_confusion_matrices):
+        predicted_binding = 0
+        has_binding = 0
+        for confusion_matrix in per_protein_confusion_matrices:
+            if confusion_matrix["tp"] + confusion_matrix["fp"] >= 1 \
+                    and confusion_matrix["tp"] + confusion_matrix["fn"] >= 1:
+                predicted_binding += 1
+            if confusion_matrix["tp"] + confusion_matrix["fn"] >= 1:
+                has_binding += 1
+        return predicted_binding/has_binding
+
+    @staticmethod
+    def compute_ci(per_protein_performances):
+        ci = round(np.std(per_protein_performances) / math.sqrt(len(per_protein_performances))
+                   * t.ppf((1 + 0.95) / 2, len(per_protein_performances)), 3)
+        return ci
 
     @staticmethod
     def compute_confusion_matrix_per_epoch(predictions, labels):
@@ -208,12 +245,14 @@ class BindingResiduePredictionEvaluator:
             "f1": float(self.compute_f1(tp, fp, fn)),
             "accuracy": float(self.compute_accuracy(tp, fp, tn, fn))
         }
-        self.performances[prediction_class.name]["mcc"].append(performances["mcc"])
-        self.performances[prediction_class.name]["precision"].append(performances["precision"])
-        self.performances[prediction_class.name]["recall"].append(performances["recall"])
-        self.performances[prediction_class.name]["f1"].append(performances["f1"])
-        self.performances[prediction_class.name]["accuracy"].append(performances["accuracy"])
-        self.performances[prediction_class.name]["confusion_matrix"].append(confusion_matrix)
+        if (tp + fp + fn) > 0:
+        # only add performance if this protein binds or if one residue was predicted to bind
+            self.performances[prediction_class.name]["mcc"].append(performances["mcc"])
+            self.performances[prediction_class.name]["precision"].append(performances["precision"])
+            self.performances[prediction_class.name]["recall"].append(performances["recall"])
+            self.performances[prediction_class.name]["f1"].append(performances["f1"])
+            self.performances[prediction_class.name]["accuracy"].append(performances["accuracy"])
+            self.performances[prediction_class.name]["confusion_matrix"].append(confusion_matrix)
 
     def write_evaluation_results(self, file_name):
         result_path = os.path.join(str(get_result_dir()), f'{file_name}.json')
@@ -223,6 +262,7 @@ class BindingResiduePredictionEvaluator:
             "mode": str(select_mode_from_config()),
             "model_parameters": get_model_parameter_dict(True),
             "optimizer_parameters": get_optimizer_arguments(True),
+            "early_stopping_after": len(self.performances["all"]["f1"]),
             "performance": {
                 "all": {
                     "confusion_matrix": self.performances["all"]["confusion_matrix"][-1],
@@ -256,6 +296,76 @@ class BindingResiduePredictionEvaluator:
                     "recall": self.performances[LabelType.SMALL.name]["recall"][-1],
                     "f1": self.performances[LabelType.SMALL.name]["f1"][-1],
                     "accuracy": self.performances[LabelType.SMALL.name]["accuracy"][-1]
+                }
+            }
+        }
+        with open(result_path, 'w') as fh:
+            json.dump(results, fh)
+
+    def write_evaluation_results_per_protein_averages(self, file_name):
+        result_path = os.path.join(str(get_result_dir()), f'{file_name}.json')
+        results = {
+            "model_type": str(select_model_type_from_config()),
+            "weight_dir": os.path.relpath(get_weight_dir()),
+            "mode": str(select_mode_from_config()),
+            "model_parameters": get_model_parameter_dict(True),
+            "optimizer_parameters": get_optimizer_arguments(True),
+            "performance": {
+                "all": {
+                    "confusion_matrix": sum_confusion_matrices(self.performances["all"]["confusion_matrix"]),
+                    "mcc": average(self.performances["all"]["mcc"]),
+                    "ci_mcc": self.compute_ci(self.performances["all"]["mcc"]),
+                    "precision": average(self.performances["all"]["precision"]),
+                    "ci_precision": self.compute_ci(self.performances["all"]["precision"]),
+                    "recall": average(self.performances["all"]["recall"]),
+                    "ci_recall": self.compute_ci(self.performances["all"]["recall"]),
+                    "f1": average(self.performances["all"]["f1"]),
+                    "ci_f1": self.compute_ci(self.performances["all"]["f1"]),
+                    "accuracy": average(self.performances["all"]["accuracy"]),
+                    "ci_accuracy": self.compute_ci(self.performances["all"]["accuracy"]),
+                    "covonebind": self.compute_covOneBind(self.performances["all"]["confusion_matrix"])
+                },
+                LabelType.METAL.name: {
+                    "confusion_matrix": sum_confusion_matrices(self.performances[LabelType.METAL.name]["confusion_matrix"]),
+                    "mcc": average(self.performances[LabelType.METAL.name]["mcc"]),
+                    "ci_mcc": self.compute_ci(self.performances[LabelType.METAL.name]["mcc"]),
+                    "precision": average(self.performances[LabelType.METAL.name]["precision"]),
+                    "ci_precision": self.compute_ci(self.performances[LabelType.METAL.name]["precision"]),
+                    "recall": average(self.performances[LabelType.METAL.name]["recall"]),
+                    "ci_recall": self.compute_ci(self.performances[LabelType.METAL.name]["recall"]),
+                    "f1": average(self.performances[LabelType.METAL.name]["f1"]),
+                    "ci_f1": self.compute_ci(self.performances[LabelType.METAL.name]["f1"]),
+                    "accuracy": average(self.performances[LabelType.METAL.name]["accuracy"]),
+                    "ci_accuracy": self.compute_ci(self.performances[LabelType.METAL.name]["accuracy"]),
+                    "covonebind": self.compute_covOneBind(self.performances[LabelType.METAL.name]["confusion_matrix"])
+                },
+                LabelType.NUCLEAR.name: {
+                    "confusion_matrix": sum_confusion_matrices(self.performances[LabelType.NUCLEAR.name]["confusion_matrix"]),
+                    "mcc": average(self.performances[LabelType.NUCLEAR.name]["mcc"]),
+                    "ci_mcc": self.compute_ci(self.performances[LabelType.NUCLEAR.name]["mcc"]),
+                    "precision": average(self.performances[LabelType.NUCLEAR.name]["precision"]),
+                    "ci_precision": self.compute_ci(self.performances[LabelType.NUCLEAR.name]["precision"]),
+                    "recall": average(self.performances[LabelType.NUCLEAR.name]["recall"]),
+                    "ci_recall": self.compute_ci(self.performances[LabelType.NUCLEAR.name]["recall"]),
+                    "f1": average(self.performances[LabelType.NUCLEAR.name]["f1"]),
+                    "ci_f1": self.compute_ci(self.performances[LabelType.NUCLEAR.name]["f1"]),
+                    "accuracy": average(self.performances[LabelType.NUCLEAR.name]["accuracy"]),
+                    "ci_accuracy": self.compute_ci(self.performances[LabelType.NUCLEAR.name]["accuracy"]),
+                    "covonebind": self.compute_covOneBind(self.performances[LabelType.NUCLEAR.name]["confusion_matrix"])
+                },
+                LabelType.SMALL.name: {
+                    "confusion_matrix": sum_confusion_matrices(self.performances[LabelType.SMALL.name]["confusion_matrix"]),
+                    "mcc": average(self.performances[LabelType.SMALL.name]["mcc"]),
+                    "ci_mcc": self.compute_ci(self.performances[LabelType.SMALL.name]["mcc"]),
+                    "precision": average(self.performances[LabelType.SMALL.name]["precision"]),
+                    "ci_precision": self.compute_ci(self.performances[LabelType.SMALL.name]["precision"]),
+                    "recall": average(self.performances[LabelType.SMALL.name]["recall"]),
+                    "ci_recall": self.compute_ci(self.performances[LabelType.SMALL.name]["recall"]),
+                    "f1": average(self.performances[LabelType.SMALL.name]["f1"]),
+                    "ci_f1": self.compute_ci(self.performances[LabelType.SMALL.name]["f1"]),
+                    "accuracy": average(self.performances[LabelType.SMALL.name]["accuracy"]),
+                    "ci_accuracy": self.compute_ci(self.performances[LabelType.SMALL.name]["accuracy"]),
+                    "covonebind": self.compute_covOneBind(self.performances[LabelType.SMALL.name]["confusion_matrix"])
                 }
             }
         }
