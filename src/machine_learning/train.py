@@ -43,9 +43,9 @@ def run_optimization(model_parameters):
                                 training_evaluators, validation_evaluators = \
                                     run_training(model_parameters_run, filename_model_prefix=f"model{model_counter}_")
 
-                                training_performances = [training_evaluator.performances["all"]["f1"]
+                                training_performances = [training_evaluator.performances["all"]["f1"][-1]
                                                          for training_evaluator in training_evaluators]
-                                validation_performances = [validation_evaluator.performances["all"]["f1"]
+                                validation_performances = [validation_evaluator.performances["all"]["f1"][-1]
                                                            for validation_evaluator in validation_evaluators]
                                 average_training_performance = sum(training_performances)/len(training_performances)
                                 average_validation_performance = \
