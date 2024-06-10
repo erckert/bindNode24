@@ -314,6 +314,7 @@ def get_optimizer_arguments(only_first_value=False):
             "weight_decay": weight_decays
         }
     else:
+        # TODO: implement usage of this in training loop (currently always only taking first value)
         optimizer_arguments = {
             "lr": learning_rates[0],
             "betas": betas[0],
