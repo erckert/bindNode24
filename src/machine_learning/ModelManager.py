@@ -6,52 +6,52 @@ from misc.enums import ModelType
 from machine_learning.Models import GCNConvModel, SAGEConvModel, SAGEConvMLPModel, SAGEConvGATMLPModel
 
 
-def initialize_model_with_config_params():
+def initialize_model_with_config_params(model_parameters):
     model_type = select_model_type_from_config()
     classifier = None
     match model_type:
         case ModelType.GCNCONV:
             classifier = GCNConvModel(
-                in_channels=get_in_channels(),
-                feature_channels=get_feature_channels(only_first_value=True),
-                additional_channels=get_additional_channels(),
-                out_channels=get_out_channels(),
-                dropout=get_dropouts(only_first_value=True),
-                use_additional_channels=use_dssp()
+                in_channels=model_parameters["in_channels"],
+                feature_channels=model_parameters["features"],
+                additional_channels=model_parameters["nr_dssp_features"],
+                out_channels=model_parameters["out_channels"],
+                dropout=model_parameters["dropout"],
+                use_additional_channels=model_parameters["use_dssp"]
             )
         case ModelType.SAGECONV:
             classifier = SAGEConvModel(
-                in_channels=get_in_channels(),
-                feature_channels=get_feature_channels(only_first_value=True),
-                additional_channels=get_additional_channels(),
-                out_channels=get_out_channels(),
-                dropout=get_dropouts(only_first_value=True),
-                activation=get_activation(),
-                use_additional_channels=use_dssp()
+                in_channels=model_parameters["in_channels"],
+                feature_channels=model_parameters["features"],
+                additional_channels=model_parameters["nr_dssp_features"],
+                out_channels=model_parameters["out_channels"],
+                dropout=model_parameters["dropout"],
+                activation=model_parameters["activation"],
+                use_additional_channels=model_parameters["use_dssp"]
             )
         case ModelType.SAGECONVMLP:
             classifier = SAGEConvMLPModel(
-                in_channels=get_in_channels(),
-                feature_channels=get_feature_channels(only_first_value=True),
-                additional_channels=get_additional_channels(),
-                out_channels=get_out_channels(),
-                dropout=get_dropouts(only_first_value=True),
-                activation=get_activation(),
+                in_channels=model_parameters["in_channels"],
+                feature_channels=model_parameters["features"],
+                additional_channels=model_parameters["nr_dssp_features"],
+                out_channels=model_parameters["out_channels"],
+                dropout=model_parameters["dropout"],
+                activation=model_parameters["activation"],
                 heads=4, #TODO: Add heads to config?
-                dropout_fcn=get_dropouts_fcn(only_first_value=True),
-                use_additional_channels=use_dssp()
+                dropout_fcn=model_parameters["droupout_fcn"],
+                use_additional_channels=model_parameters["use_dssp"]
             )
         case ModelType.SAGECONVGATMLP:
             classifier = SAGEConvGATMLPModel(
-                in_channels=get_in_channels(),
-                feature_channels=get_feature_channels(only_first_value=True),
-                additional_channels=get_additional_channels(),
-                out_channels=get_out_channels(),
-                dropout=get_dropouts(only_first_value=True),
-                activation=get_activation(),
+                in_channels=model_parameters["in_channels"],
+                feature_channels=model_parameters["features"],
+                additional_channels=model_parameters["nr_dssp_features"],
+                out_channels=model_parameters["out_channels"],
+                dropout=model_parameters["dropout"],
+                activation=model_parameters["activation"],
                 heads=4, #TODO: Add heads to config?
-                dropout_fcn=get_dropouts_fcn(only_first_value=True),
-                use_additional_channels=use_dssp()
+                dropout_fcn=model_parameters["droupout_fcn"],
+                use_additional_channels=model_parameters["use_dssp"]
             )
     return classifier
 
@@ -68,6 +68,6 @@ def load_classifier_torch(model_path):
     return classifier
 
 
-def initialize_untrained_model():
-    classifier = initialize_model_with_config_params()
+def initialize_untrained_model(model_parameters):
+    classifier = initialize_model_with_config_params(model_parameters)
     return classifier
