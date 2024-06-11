@@ -254,13 +254,13 @@ class BindingResiduePredictionEvaluator:
             self.performances[prediction_class.name]["accuracy"].append(performances["accuracy"])
             self.performances[prediction_class.name]["confusion_matrix"].append(confusion_matrix)
 
-    def write_evaluation_results(self, file_name):
+    def write_evaluation_results(self, file_name, model_parameters):
         result_path = os.path.join(str(get_result_dir()), f'{file_name}.json')
         results = {
             "model_type": str(select_model_type_from_config()),
             "weight_dir": os.path.relpath(get_weight_dir()),
             "mode": str(select_mode_from_config()),
-            "model_parameters": get_model_parameter_dict(True),
+            "model_parameters": model_parameters,
             "optimizer_parameters": get_optimizer_arguments(True),
             "early_stopping_after": len(self.performances["all"]["f1"]),
             "performance": {

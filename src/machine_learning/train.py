@@ -57,6 +57,7 @@ def run_optimization(model_parameters):
                                      model_parameters_run)
                                 )
                                 model_counter += 1
+                                torch.cuda.empty_cache()
     sorted_performances = sorted(performances, key=lambda tup: (tup[0], tup[1]), reverse=True)
     print(f"Best overall model was {sorted_performances[0][2]} with a validation F1 of {sorted_performances[0][0]} "
           f"and a training F1 of {sorted_performances[0][1]}.")
@@ -221,6 +222,8 @@ def train_and_validate(model, training_dataset, validation_dataset, model_parame
         # load best model
         model = torch.load(checkpoint_file)
 
+    optimizer.zero_grad(set_to_none=True)
+
     return model, training_evaluator, validation_evaluator
 
 
@@ -252,8 +255,8 @@ def run_training(model_parameters, filename_model_prefix=""):
         save_classifier_torch(trained_model, model_save_path)
 
         # Write training details and final performance to file
-        training_evaluator.write_evaluation_results(f"{filename_model_prefix}model_training_{i}")
-        validation_evaluator.write_evaluation_results(f"{filename_model_prefix}model_validation_{i}")
+        training_evaluator.write_evaluation_results(f"{filename_model_prefix}model_training_{i}", model_parameters)
+        validation_evaluator.write_evaluation_results(f"{filename_model_prefix}model_validation_{i}", model_parameters)
 
         training_evaluators.append(training_evaluator)
         validation_evaluators.append(validation_evaluator)
