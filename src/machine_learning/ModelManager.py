@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 from setup.configProcessor import select_model_type_from_config, get_in_channels, get_feature_channels, get_dropouts, \
     get_out_channels, get_activation, get_dropouts_fcn, get_additional_channels, use_dssp
@@ -26,7 +27,7 @@ def initialize_model_with_config_params(model_parameters):
                 additional_channels=model_parameters["nr_dssp_features"],
                 out_channels=model_parameters["out_channels"],
                 dropout=model_parameters["dropout"],
-                activation=model_parameters["activation"],
+                activation=eval(model_parameters["activation"]),
                 use_additional_channels=model_parameters["use_dssp"]
             )
         case ModelType.SAGECONVMLP:
@@ -36,7 +37,7 @@ def initialize_model_with_config_params(model_parameters):
                 additional_channels=model_parameters["nr_dssp_features"],
                 out_channels=model_parameters["out_channels"],
                 dropout=model_parameters["dropout"],
-                activation=model_parameters["activation"],
+                activation=eval(model_parameters["activation"]),
                 heads=4, #TODO: Add heads to config?
                 dropout_fcn=model_parameters["droupout_fcn"],
                 use_additional_channels=model_parameters["use_dssp"]
@@ -48,7 +49,7 @@ def initialize_model_with_config_params(model_parameters):
                 additional_channels=model_parameters["nr_dssp_features"],
                 out_channels=model_parameters["out_channels"],
                 dropout=model_parameters["dropout"],
-                activation=model_parameters["activation"],
+                activation=eval(model_parameters["activation"]),
                 heads=4, #TODO: Add heads to config?
                 dropout_fcn=model_parameters["droupout_fcn"],
                 use_additional_channels=model_parameters["use_dssp"]
