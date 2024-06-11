@@ -10,7 +10,7 @@ import torch
 import numpy as np
 
 
-def run_prediction():
+def run_prediction(model_parameters):
     structure_cutoff = get_structure_cutoff(only_first_value=True)
     dataset = BindingResidueDataset(structure_cutoff)
     predictions = {}
@@ -20,7 +20,7 @@ def run_prediction():
     models = os.listdir(get_weight_dir())
     for model in models:
         model_path = os.path.join(get_weight_dir(), model)
-        pretrained_model = load_classifier_torch(model_path)
+        pretrained_model = load_classifier_torch(model_path, model_parameters)
         pretrained_model.to(select_device())
 
         data_loader = DataLoader(dataset, batch_size=1, shuffle=True)

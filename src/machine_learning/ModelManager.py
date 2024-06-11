@@ -62,9 +62,9 @@ def save_classifier_torch(classifier, model_path):
     torch.save(classifier.state_dict(), model_path)
 
 
-def load_classifier_torch(model_path):
+def load_classifier_torch(model_path, model_parameters):
     """ Load pre-saved model """
-    classifier = initialize_model_with_config_params()
+    classifier = initialize_model_with_config_params(model_parameters)
     classifier.load_state_dict(torch.load(model_path))
     return classifier
 
