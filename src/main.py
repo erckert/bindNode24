@@ -16,7 +16,7 @@ if __name__ == "__main__":
         setup_chache()
     match mode:
         case Mode.PREDICT:
-            model_parameters = get_model_parameter_dict(only_first_value=False)
+            model_parameters = get_model_parameter_dict(only_first_value=True)
             run_prediction(model_parameters)
         case Mode.OPTIMIZE:
             model_parameters = get_model_parameter_dict(only_first_value=False)
