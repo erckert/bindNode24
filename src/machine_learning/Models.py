@@ -113,36 +113,37 @@ class SAGEConvGATMLPModel(torch.nn.Module):
         self.use_additional_channels = use_additional_channels
 
         if self.use_additional_channels:
-            gat_channels = additional_channels
+            sage2_channels = additional_channels
         else:
-            gat_channels = in_channels
+            sage2_channels = in_channels
 
         self.sage1 = SAGEConv(in_channels=in_channels, out_channels=feature_channels, aggr="mean")
-        self.gat1 = GATv2Conv(in_channels=gat_channels, out_channels=int(gat_channels / 2), heads=heads,
+        self.sage2 = SAGEConv(in_channels=sage2_channels, out_channels=feature_channels, aggr="mean")
+        self.gat1 = GATv2Conv(in_channels=feature_channels, out_channels=int(feature_channels / 2), heads=heads,
                               edge_dim=1, concat=True)
-        self.gat2 = GATv2Conv(in_channels=heads * int(gat_channels / 2),
-                              out_channels=int(gat_channels / 4), heads=heads, edge_dim=1, concat=True)
+        self.gat2 = GATv2Conv(in_channels=heads * int(feature_channels / 2),
+                              out_channels=int(feature_channels / 4), heads=heads, edge_dim=1, concat=True)
         self.fc1 = torch.nn.Linear(
-            feature_channels + int(gat_channels / 4) * heads,
-            feature_channels + int(gat_channels / 4) * heads
+            feature_channels + int(feature_channels / 4) * heads,
+            feature_channels + int(feature_channels / 4) * heads
         )
         self.fc2 = torch.nn.Linear(
-            feature_channels + int(gat_channels / 4) * heads,
+            feature_channels + int(feature_channels / 4) * heads,
             out_channels
         )
 
         self.normx = torch.nn.BatchNorm1d(feature_channels)
-        self.normy = torch.nn.BatchNorm1d(int(gat_channels / 4) * heads)
-        self.normfcn = torch.nn.BatchNorm1d(feature_channels + int(gat_channels / 4) * heads)
+        self.normy = torch.nn.BatchNorm1d(int(feature_channels / 4) * heads)
+        self.normfcn = torch.nn.BatchNorm1d(feature_channels + int(feature_channels / 4) * heads)
         self.dropout = dropout
         self.dropout_fcn = dropout_fcn
         self.activation = activation
 
     def forward(self, features, edges, edges2, edge_features, additional_features):
         if self.use_additional_channels:
-            gat_input = additional_features
+            gat_input = self.normx(self.sage2(additional_features, edges))
         else:
-            gat_input = features
+            gat_input = self.normx(self.sage2(features, edges))
 
         x = self.sage1(features, edges)
         x = self.normx(x)
