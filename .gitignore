@@ -5,7 +5,8 @@ __pycache__/
 
 wandb/
 *.json
-*.txt
+
+data/
 
 # C extensions
 *.so
@@ -126,3 +127,6 @@ plots/compare_models.png
 /data/AF2_predictions/
 /data/DSSP_features
 /data/random_sequences
+ids.txt
+log.txt
+log2.txt
