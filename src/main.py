@@ -6,6 +6,8 @@ from machine_learning.train import run_optimization, run_training
 from setup.configProcessor import validate_config, select_mode_from_config, use_cache, get_model_parameter_dict
 from setup.generalSetup import seed_all
 
+from output.outputFileWriting import write_predictions_to_file
+
 if __name__ == "__main__":
     print('I am running')
     seed_all(seed=42)
@@ -17,7 +19,8 @@ if __name__ == "__main__":
     match mode:
         case Mode.PREDICT:
             model_parameters = get_model_parameter_dict(only_first_value=True)
-            run_prediction(model_parameters)
+            predictions = run_prediction(model_parameters)
+            write_predictions_to_file(predictions)
         case Mode.OPTIMIZE:
             model_parameters = get_model_parameter_dict(only_first_value=False)
             run_optimization(model_parameters)

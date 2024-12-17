@@ -2,7 +2,6 @@ from machine_learning.Dataset import BindingResidueDataset
 from machine_learning.ModelManager import load_classifier_torch
 from setup.configProcessor import get_weight_dir, get_structure_cutoff
 from setup.generalSetup import select_device
-from output.outputFileWriting import write_predictions_to_file
 
 from torch_geometric.loader import DataLoader
 import os
@@ -46,4 +45,4 @@ def run_prediction(model_parameters):
                     predictions[protein_id] = [prediction]
                 else:
                     predictions[protein_id] += [prediction]
-    write_predictions_to_file(predictions)
+    return predictions
