@@ -2,16 +2,13 @@ import os
 
 from setup.configProcessor import get_result_dir, write_ri, get_cutoff
 from misc.enums import LabelType
+from data_processing.post_processing import get_averaged_predictions
 
 
 def write_predictions_to_file(predictions):
-    averaged_probabilities = {}
+    averaged_probabilities = get_averaged_predictions()
 
     is_write_ri = write_ri()
-    for protein_id in predictions.keys():
-        prediction_list = predictions[protein_id]
-        averaged_probability = sum(prediction_list)/len(prediction_list)
-        averaged_probabilities[protein_id] = averaged_probability
 
     result_dir = get_result_dir()
     prediction_folder = os.path.join(result_dir, "predictions")
