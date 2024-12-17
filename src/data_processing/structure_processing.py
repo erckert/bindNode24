@@ -93,14 +93,14 @@ def one_hot_encode_dssp_structure(dssp_structure):
     return one_hot_encoding
 
 
-def get_dssp_features(self):
+def get_dssp_features(protein_ids):
     dssp_dir = get_DSSP_dir()
     files = os.listdir(dssp_dir)
 
     min_max_scaler = preprocessing.MinMaxScaler()
     normalized_dssp_features = {}
 
-    for protein_id in self.protein_ids:
+    for protein_id in protein_ids:
         dssp_file = f"{protein_id}.csv"
         if dssp_file in files:
             dssp_features = pd.read_csv(os.path.join(dssp_dir, dssp_file), header=None, sep=";")
@@ -111,7 +111,7 @@ def get_dssp_features(self):
 
             # one-hot encode secondary structures
             secondary_structure_one_hot_encoding = \
-                pd.DataFrame([self.one_hot_encode_dssp_structure(entry) for entry in dssp_features.iloc[:, 2]])
+                pd.DataFrame([one_hot_encode_dssp_structure(entry) for entry in dssp_features.iloc[:, 2]])
 
             # keep solvant accesibility as it is (already normalized)
             solvent_accessibility = dssp_features.iloc[:, 3]
