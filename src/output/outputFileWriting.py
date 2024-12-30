@@ -2,12 +2,9 @@ import os
 
 from setup.configProcessor import get_result_dir, write_ri, get_cutoff
 from misc.enums import LabelType
-from data_processing.post_processing import get_averaged_predictions
 
 
-def write_predictions_to_file(predictions):
-    averaged_probabilities = get_averaged_predictions()
-
+def write_predictions_to_file(averaged_probabilities):
     is_write_ri = write_ri()
 
     result_dir = get_result_dir()

@@ -5,9 +5,8 @@ import os
 import re
 
 from pathlib import Path
-from config import App
+from removed.config import App
 from colorama import Fore
-import torch.nn.functional as F
 from misc.enums import Mode, ModelType, LabelType
 
 modes = ["optimize-architecture", "training", "predict"]
@@ -210,6 +209,21 @@ def get_out_channels():
 def get_cutoff():
     model_section = config["MODEL"]
     return model_section.getfloat('cutoff')
+
+
+def use_postprocessing():
+    postprocessing_section = config["POSTPROCESSING"]
+    return postprocessing_section.getboolean('use_postprocessing')
+
+
+def get_rASA_cutoff():
+    postprocessing_section = config["POSTPROCESSING"]
+    return postprocessing_section.getfloat('rASA_cutoff')
+
+
+def get_site_cutoff():
+    postprocessing_section = config["POSTPROCESSING"]
+    return postprocessing_section.getint('binding_site_proximity')
 
 
 def get_output_file_name():

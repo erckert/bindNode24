@@ -6,7 +6,7 @@ __pycache__/
 wandb/
 *.json
 
-data/
+removed/data/
 
 # C extensions
 *.so
@@ -124,9 +124,12 @@ plots/compare_embeds.png
 plots/PLOT_TEST_Results.png
 plots/Q8TL28_old.png
 plots/compare_models.png
-/data/AF2_predictions/
-/data/DSSP_features
-/data/random_sequences
+/removed/data/AF2_predictions/
+/removed/data/DSSP_features
+/removed/data/random_sequences
+/removed
 ids.txt
 log.txt
 log2.txt
+/src/config_evaluation.ini
+/src/helper_scripts.py

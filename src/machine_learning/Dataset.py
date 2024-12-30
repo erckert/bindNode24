@@ -19,7 +19,7 @@ class BindingResidueDataset(Dataset):
         self.embeddings = self.get_embeddings()
         self.sequences = self.get_sequences()
         self.connectivity_matrices = get_connectivity(self.structure_cutoff, self.protein_ids, self.sequences)
-        self.dssp_features = get_dssp_features()
+        self.dssp_features = get_dssp_features(self.protein_ids)
 
     def len(self):
         return len(self.protein_ids)
