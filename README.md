@@ -1,6 +1,6 @@
 # bindNode24
 Implementation is heavily based on the works of Littmann, et al. with [bindEmbed21DL](https://github.com/Rostlab/bindPredict/blob/master/bindEmbed21DL.py) [1].
-The implementation of bindNode24 builds on top of bindNode23 [2], a method to predict whether a residue in a protein is binding to metal ions, nucleic acids (DNA or RNA), or small molecules that has been developed by Franz Birkeneder under my supervision. For the Graph Neural Net method, bindNode23 uses ProtT5 embeddings [3] as input to a 2-layer GNN. Since bindNode23 is based on single sequences, it can easily be applied to any protein sequence.
+The implementation of bindNode24 builds on top of bindNode23 [2], a method to predict whether a residue in a protein is binding to metal ions, nucleic acids (DNA or RNA), or small molecules that has been developed by Franz Birkeneder under my supervision. For the Graph Neural Net method, bindNode23 uses ProtT5 embeddings [3] as input to a 2-layer GNN.
  
 ## Table of Contents
 
@@ -15,9 +15,8 @@ The implementation of bindNode24 builds on top of bindNode23 [2], a method to pr
 ### Usage
 
 
-`develop_bindNode23.py` provides the code to reproduce the bindEmbed21DL development (hyperparameter optimization, training, performance assessment on the test set).
-
-All needed files and paths can be set in `config.py` (marked as TODOs).
+All needed files and paths can be set in `config.ini`.
+Pretrained model dictionaries for bindNode24 are available in `trained_model_dict/bindNode24`.
 
 #### Run code
 
@@ -38,11 +37,11 @@ Warning: If PDB structures or DSSP files are unavailable, the corresponding entr
 
 #### Development
 
-The data set used for training and testing was extracted from BioLip [4]. The UniProt identifiers for the 5 splits used during cross-validation (DevSet1014), the test set (TestSet300), and the independent set of proteins added to BioLip after November 2019 (TestSetNew46) as well as the corresponding FASTA sequences and used binding annotations are made available in the `data` folder.
+The data set used for training and testing was extracted from BioLip [4]. The UniProt identifiers for the 5 splits used during cross-validation (DevSet1014), and the test set (TestSet300) as well as the corresponding FASTA sequences, embeddings, predicted structures, precomputed DSSP features and used binding annotations are made available in the `dataset` folder.
 
-The weights for pretrained models are available in the `pretrained_model_weights` folder.
+The weights for pretrained models are available in the `trained_model_dicts\bindNode24` folder.
 
-ProtT5 embeddings can be generated using [the bio_embeddings pipeline](https://github.com/sacdallago/bio_embeddings) [5]. To use them with `bindEmbed21`, they need to be converted to use the correct keys. A script for the conversion can be found in the folder `utils`.
+ProtT5 embeddings can be generated using [the bio_embeddings pipeline](https://github.com/sacdallago/bio_embeddings) [5]. Embeddings may require to be reformatted to use the correct protein ids as keys
 
 #### Output files
 
