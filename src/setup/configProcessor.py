@@ -5,7 +5,7 @@ import os
 import re
 
 from pathlib import Path
-from removed.config import App
+from config import App
 from colorama import Fore
 from misc.enums import Mode, ModelType, LabelType
 
