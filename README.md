@@ -1,6 +1,6 @@
 # bindNode24
 Implementation is heavily based on the works of Littmann, et al. with [bindEmbed21DL](https://github.com/Rostlab/bindPredict/blob/master/bindEmbed21DL.py) [1].
-The implementation of bindNode24 builds on top of bindNode23 [2], a method to predict whether a residue in a protein is binding to metal ions, nucleic acids (DNA or RNA), or small molecules that has been developed by Franz Birkeneder under my supervision. For the Graph Neural Net method, bindNode24 uses ProtT5 embeddings [3] as input to a 2-layer GNN.
+The implementation of bindNode24 builds on top of bindNode23 [2], a method to predict whether a residue in a protein is binding to metal ions, nucleic acids (DNA or RNA), or small molecules that has been developed by Franz Birkeneder under my supervision. bindNode24 uses ProtT5 embeddings [3] as input to a 2-layer GNN.
  
 ## Table of Contents
 
