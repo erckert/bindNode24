@@ -16,7 +16,7 @@ The implementation of bindNode24 builds on top of bindNode23 [2], a method to pr
 
 
 All needed files and paths can be set in `config.ini`.
-Pretrained model dictionaries for bindNode24 are available in `trained_model_dict/bindNode24`.
+Pretrained model dictionaries for bindNode24 are available in `trained_model_dicts/bindNode24`.
 
 #### Run code
 
@@ -31,8 +31,6 @@ python src/main.py -f FILEPATH
 ```
 instead.
 
-This method was developed using Python 3.10. Specific libraries and versions are provided in `requirements.txt`. Pytorch and cuda installations may require obtaining the correct pip command from [https://pytorch.org/](https://pytorch.org/) for the specific operating system. All other libraries should be directly installable with pip. 
-
 Warning: If PDB structures or DSSP files are unavailable, the corresponding entries in the dataset will be replaced with 0. A notification will be printed in the command line. Predictions generated in this way may be very unreliable. 
 
 ### Data
@@ -41,7 +39,7 @@ Warning: If PDB structures or DSSP files are unavailable, the corresponding entr
 
 The data set used for training and testing was extracted from BioLip [4]. The UniProt identifiers for the 5 splits used during cross-validation (DevSet1014), and the test set (TestSet300) as well as the corresponding FASTA sequences, embeddings, predicted structures, precomputed DSSP features and used binding annotations are made available in the `dataset` folder.
 
-The weights for pretrained models are available in the `trained_model_dicts\bindNode24` folder.
+The weights for pretrained models are available in the `trained_model_dicts/bindNode24` folder.
 
 ProtT5 embeddings can be generated using [the bio_embeddings pipeline](https://github.com/sacdallago/bio_embeddings) [5]. Embeddings may require to be reformatted to use the correct protein ids as keys
 
@@ -79,13 +77,7 @@ Probabilities only show 3 decimal positions.
 
 ### Requirements
 
-bindEmbed21 is written in Python3. In order to execute bindEmbed21, Python3 has to be installed locally. Additionally, the following Python packages have to be installed:
-- numpy
-- scikit-learn
-- torch
-- pandas
-- h5py
-- pyg
+This method was developed using Python 3.10. Specific libraries and versions are provided in `requirements.txt`. Pytorch and cuda installations may require obtaining the correct pip command from [https://pytorch.org/](https://pytorch.org/) for the specific operating system. All other libraries should be directly installable with pip. 
 
 ### Team
 
