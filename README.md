@@ -97,10 +97,10 @@ The pretrained models and provided code are released under terms of the [GNU Gen
 If you use this code or our pretrained models for your publication, please cite the original paper:
 ```
 @ARTICLE
-{XXXXXXX,
+{bindNode24,
 author={Erckert, Kyra and Birkeneder, Franz and Rost, Burkhard},
 journal={XXXXXX},
-title={bindNode24: Competitive binding residue prediction performance with 80% fewer parameters},
+title={bindNode24: Competitive binding residue prediction with 60% smaller model},
 year={2024},
 volume={},
 number={},
