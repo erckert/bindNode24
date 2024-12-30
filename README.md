@@ -31,6 +31,8 @@ python src/main.py -f FILEPATH
 ```
 instead.
 
+This method was developed using Python 3.10. Specific libraries and versions are provided in `requirements.txt`. Pytorch and cuda installations may require obtaining the correct pip command from [https://pytorch.org/] for the specific operating system. All other libraries should be directly installable with pip. 
+
 Warning: If PDB structures or DSSP files are unavailable, the corresponding entries in the dataset will be replaced with 0. A notification will be printed in the command line. Predictions generated in this way may be very unreliable. 
 
 ### Data
